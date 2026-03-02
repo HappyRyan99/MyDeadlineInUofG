@@ -7,17 +7,21 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
+            path: '/',
+            redirect: '/dashboard'
+        },
+        {
             path: '/dashboard/',
             name: 'dashboard',
             component: DashboardView
         },
         {
-            path: '/courses/',
+            path: '/courses',
             name: 'courses',
             component: CoursesView
         },
         {
-            path: '/groups/',
+            path: '/groups',
             name: 'groups',
             component: GroupsView
         }
