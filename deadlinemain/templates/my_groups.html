@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Group - MyDeadlineInUofG</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fa;
+        }
+
+        .content-container {
+            max-width: 1080px;
+            margin: 0 auto;
+            flex-grow: 1;
+            padding: 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="{% url 'dashboard' %}">
+            <i class="bi bi-clock-history me-2"></i>MyDeadlineInUofG
+        </a>
+
+        <div class="d-flex align-items-center">
+            {% if student %}
+                <span class="me-3 text-muted">
+                    Welcome, <strong>{{ student.name }}</strong>
+                </span>
+                <a href="{% url 'course_list' %}" class="me-3 text-decoration-none text-dark">
+                    <i class="bi bi-book me-1"></i>My Course
+                </a>
+                <a href="{% url 'my_groups' %}" class="me-3 text-decoration-none text-dark">
+                    <i class="bi bi-people me-1"></i>My Group
+                </a>
+                <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i>Logout
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Login</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="content-container">
+
+    <!-- Page Title -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="text-primary mb-0">
+            <i class="bi bi-people me-2"></i>My Groups
+        </h3>
+
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addGroupModal">
+            <i class="bi bi-plus-lg me-1"></i>Add Group
+        </button>
+    </div>
+
+    <!-- Groups Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for group in groups %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0">
+
+                    <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                        <h5 class="card-title text-primary fw-bold mb-0">
+                            {{ group.group_name }}
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted fw-bold">
+                            {{ group.course_code.course_code }}
+                        </h6>
+
+                        <p class="card-text text-secondary mb-3 small">
+                            {{ group.course_code.name }}
+                        </p>
+
+                        <div class="border-top pt-2">
+                            <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem;">
+                                Members
+                            </small>
+
+                            <ul class="list-unstyled mt-2 mb-0 small">
+                                {% for member in group.members.all %}
+                                    <li class="text-secondary d-flex align-items-center mb-1">
+                                        <i class="bi bi-person-fill me-2 text-muted"></i>
+                                        {{ member.student.name }}
+                                    </li>
+                                {% empty %}
+                                    <li class="text-muted fst-italic">
+                                        No members assigned
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-light border-0 text-end py-2">
+                        <small class="text-muted" style="font-size: 0.75rem;">
+                            Created by {{ group.student.name }}
+                        </small>
+                    </div>
+
+                </div>
+            </div>
+
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="text-muted opacity-50">
+                    <i class="bi bi-people display-1"></i>
+                    <p class="mt-3 fs-5">You are not in any groups.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="bg-dark text-white text-center py-3 mt-auto">
+    <div class="container">
+        <p class="mb-0">&copy; 2026 MyDeadlineInUofG. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
