@@ -123,3 +123,5 @@ def edit_course(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)from django.shortcuts import render
 
 # Create your views here.
+def index(request):
+    return render(request, 'login.html')
