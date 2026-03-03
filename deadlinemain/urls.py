@@ -20,4 +20,8 @@ urlpatterns = [
     path('api/courses_data/', api_views.course_list_data, name='courses_data'),
     path('api/groups_data/', api_views.my_groups_data, name='groups_data'),
     path('', views.index, name='index'), # Default to login
+    path('register/', views.register_view, name='register'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('', views.home_view, name='home'),
 ]
