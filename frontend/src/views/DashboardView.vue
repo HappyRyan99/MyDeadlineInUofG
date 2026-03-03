@@ -1,7 +1,7 @@
 <template>
-  <div class="min-vh-100 d-flex flex-column bg-light">
+  <div class="vh-100 d-flex flex-column bg-light overflow-hidden">
     <!-- Top Section (Navbar) -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm flex-shrink-0">
       <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">
           <i class="bi bi-clock-history me-2"></i>MyDeadlineInUofG
@@ -57,24 +57,30 @@
               <div class="row text-center">
                 <div class="col-4 border-end">
                   <h5 class="fw-bold mb-3 text-danger">Within 1 Day</h5>
-                  <ul v-if="tasks_1_day.length > 0" class="list-unstyled mb-0 text-start small">
-                    <li v-for="task in tasks_1_day" :key="task.id" class="text-truncate ps-3"><i class="bi bi-dot"></i>{{ task.task_title }}</li>
+                  <ul v-if="tasks_1_day.length > 0" class="list-unstyled mb-0 text-start text-danger">
+                    <li v-for="task in tasks_1_day" :key="task.id" class="text-truncate ps-3 overview-task-item" @click="showTaskDetails(task)">
+                      <i class="bi bi-dot"></i>{{ task.task_title }}
+                    </li>
                   </ul>
-                  <span v-else class="text-muted small fst-italic">No deadlines</span>
+                  <span v-else class="text-muted fst-italic">No deadlines</span>
                 </div>
                 <div class="col-4 border-end">
                   <h5 class="fw-bold mb-3" style="color: #fd7e14;">Within 3 Days</h5>
-                  <ul v-if="tasks_3_day.length > 0" class="list-unstyled mb-0 text-start small">
-                    <li v-for="task in tasks_3_day" :key="task.id" class="text-truncate ps-3"><i class="bi bi-dot"></i>{{ task.task_title }}</li>
+                  <ul v-if="tasks_3_day.length > 0" class="list-unstyled mb-0 text-start text-orange">
+                    <li v-for="task in tasks_3_day" :key="task.id" class="text-truncate ps-3 overview-task-item" @click="showTaskDetails(task)">
+                      <i class="bi bi-dot"></i>{{ task.task_title }}
+                    </li>
                   </ul>
-                  <span v-else class="text-muted small fst-italic">No deadlines</span>
+                  <span v-else class="text-muted fst-italic">No deadlines</span>
                 </div>
                 <div class="col-4">
                   <h5 class="fw-bold mb-3 text-warning">Within 7 Days</h5>
-                  <ul v-if="tasks_7_day.length > 0" class="list-unstyled mb-0 text-start small">
-                    <li v-for="task in tasks_7_day" :key="task.id" class="text-truncate ps-3"><i class="bi bi-dot"></i>{{ task.task_title }}</li>
+                  <ul v-if="tasks_7_day.length > 0" class="list-unstyled mb-0 text-start text-warning">
+                    <li v-for="task in tasks_7_day" :key="task.id" class="text-truncate ps-3 overview-task-item" @click="showTaskDetails(task)">
+                      <i class="bi bi-dot"></i>{{ task.task_title }}
+                    </li>
                   </ul>
-                  <span v-else class="text-muted small fst-italic">No deadlines</span>
+                  <span v-else class="text-muted fst-italic">No deadlines</span>
                 </div>
               </div>
             </div>
@@ -83,14 +89,14 @@
           <h3 class="mb-3 border-bottom pb-2">Upcoming Deadlines</h3>
           <div class="row row-cols-1 row-cols-md-3 g-4">
             <div v-for="task in tasks" :key="task.id" class="col">
-              <div class="card shadow-sm h-100 placeholder-wave" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.classList.replace('shadow-sm', 'shadow')" onmouseout="this.classList.replace('shadow', 'shadow-sm')" @click="showTaskDetails(task)">
+              <div class="card shadow-sm h-100" style="cursor: pointer;" @click="showTaskDetails(task)">
                 <div class="card-body d-flex flex-column">
                   <div class="d-flex justify-content-between align-items-start mb-2">
                     <h5 class="card-title mb-0 text-truncate" :title="task.task_title">{{ task.task_title }}</h5>
-                    <span v-if="task.group" class="badge bg-secondary text-truncate" style="max-width: 100px;">Group&nbsp;Work</span>
-                    <span v-else class="badge bg-success">Personal</span>
+                    <span v-if="task.group" class="badge bg-success text-white rounded-pill text-truncate" style="max-width: 100px;">Group&nbsp;Work</span>
+                    <span v-else class="badge bg-primary text-white rounded-pill">Personal</span>
                   </div>
-                  <div v-if="task.group" style="font-size: 12px;" class="text-end">{{ task.course_name }}</div>
+                  <div v-if="task.group" style="font-size: 12px;" class="text-end">{{ task.group.course_name }}</div>
                   <div class="flex-fill mt-2">
                     <p style="min-height: 80px;max-height: 100px;overflow: hidden;">{{ task.content }}</p>
                   </div>
@@ -110,10 +116,13 @@
 
             <div class="col" v-if="tasks.length === 0">
               <!-- Add New (Empty State) -->
-              <div class="card p-3 mb-3 bg-light d-flex align-items-center justify-content-center text-muted" style="height: 100px; cursor: pointer; border: 2px dashed #dee2e6;" @click="openAddTaskModal">
+              <div class="card p-4 mb-3 border-dashed border-2 bg-white d-flex align-items-center justify-content-center text-muted empty-state-card" style="min-height: 180px; cursor: pointer;" @click="openAddTaskModal">
                 <div class="text-center">
-                  <i class="bi bi-plus-circle fs-4 mb-1"></i>
-                  <div>Add Deadline</div>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-2 text-secondary" style="opacity: 0.7;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <div class="fw-medium">Add Deadline</div>
                 </div>
               </div>
             </div>
@@ -129,7 +138,7 @@
     </div>
 
     <!-- Bottom Section -->
-    <footer class="bg-dark text-white text-center py-3 mt-auto">
+    <footer class="bg-dark text-white text-center py-3 mt-auto flex-shrink-0">
       <div class="container">
         <small>2026 MyDeadlineInUofG</small>
       </div>
@@ -149,7 +158,7 @@
     </div>
 
     <!-- Add Task Modal -->
-    <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true" ref="addTaskModalEl">
+    <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" ref="addTaskModalEl">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -187,57 +196,67 @@
       </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true" ref="deleteTaskModalEl">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="deleteTaskModalLabel">Confirm Delete</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="closeDeleteModal"></button>
+    <!-- Task Details Modal (from DashboardViewNew) -->
+    <div v-if="selectedTask" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1055;" @click.self="closeTaskDetails">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable fade-in-up">
+        <div class="modal-content border-0 shadow-lg rounded-4 bg-white bg-opacity-90 blur-backdrop">
+          <div class="modal-header border-bottom-0 pb-0">
+            <h3 class="modal-title fw-bold text-dark h4">{{ selectedTask.task_title }}</h3>
+            <button type="button" class="btn-close" @click="closeTaskDetails" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
-            Are you sure you want to delete the task "<span>{{ taskToDelete?.task_title }}</span>"?
+          <div class="modal-body py-4">          
+            <div class="row g-3 mb-4">
+              <div class="col-sm-6 text-sm">
+                <span class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem;">Deadline</span>
+                <span :class="['fw-bold', getDeadlineColorClass(selectedTask)]">
+                  {{ selectedTask.deadline }}
+                </span>
+              </div>
+              <div class="col-sm-6 text-sm">
+                <span class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem;">Type</span>
+                <span :class="['badge text-white rounded-pill', selectedTask.group ? 'bg-success' : 'bg-primary']">
+                  {{ selectedTask.group ? 'Group Work' : 'Personal' }}
+                </span>
+              </div>
+              <div class="col-sm-6 text-sm" v-if="selectedTask.group">
+                <span class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem;">Course</span>
+                <span class="fw-medium text-dark">{{ selectedTask.group.course_code }} - {{ selectedTask.group.course_name }}</span>
+              </div>
+              <div class="col-sm-6 text-sm" v-if="selectedTask.group">
+                <span class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem;">Group</span>
+                <span class="fw-medium text-dark">{{ selectedTask.group.group_name }}</span>
+              </div>
+            </div>
+            
+            <div class="bg-light bg-opacity-50 rounded-3 p-4 border border-1">
+              <h4 class="h6 fw-bold text-dark mb-3">Description</h4>
+              <p class="mb-0 text-secondary" style="line-height: 1.6; white-space: pre-wrap;">{{ selectedTask.content }}</p>
+            </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="closeDeleteModal">Cancel</button>
-            <button type="button" class="btn btn-danger" @click="confirmDeleteTaskBtn">Delete</button>
+          <div class="modal-footer border-top-0 pt-0">
+            <button type="button" class="btn btn-secondary" @click="closeTaskDetails">Close</button>
+            <button type="button" class="btn btn-danger" v-if="!deletingTaskId" @click="openDeleteModal(selectedTask)">Delete Task</button>
+            <button type="button" class="btn btn-danger disabled" v-if="deletingTaskId === selectedTask.id">
+               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+               Deleting...
+            </button>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Task Details Modal -->
-    <div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-labelledby="taskDetailsModalLabel" aria-hidden="true" ref="taskDetailsModalEl">
-      <div class="modal-dialog modal-dialog-centered" style="min-width: 800px; max-width: 1000px;">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="taskDetailsModalLabel">Task Details</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="closeTaskDetails"></button>
+    
+    <!-- Custom Confirm Delete Modal -->
+    <div v-if="taskToDelete" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1060;" @click.self="closeDeleteModal">
+      <div class="modal-dialog modal-dialog-centered modal-sm fade-in-up">
+        <div class="modal-content border-0 shadow-lg rounded-4 bg-white text-center p-4">
+          <div class="text-danger mb-3">
+            <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
           </div>
-          <div class="modal-body" v-if="selectedTask">
-            <div class="mb-3">
-              <small class="text-muted d-block">Title</small>
-              <h5 class="fw-bold">{{ selectedTask.task_title }}</h5>
-            </div>
-            <div class="mb-3">
-              <small class="text-muted d-block">Course</small>
-              <h5 class="text-primary">
-                <span class="fw-bold me-2">{{ selectedTask.course_code }}</span>
-                <span class="fw-normal text-dark">{{ selectedTask.course_name }}</span>
-                <span class="fw-normal me-2">{{ selectedTask.group_name }}</span>
-              </h5>
-            </div>
-            <div class="mb-3">
-              <small class="text-muted d-block">Deadline</small>
-              <p class="fs-5 text-danger fw-bold"><i class="bi bi-calendar-event me-2"></i><span>{{ selectedTask.deadline }}</span></p>
-            </div>
-            <div class="mb-3">
-              <small class="text-muted d-block">Content</small>
-              <div class="p-3 bg-light rounded border" style="white-space: pre-wrap;">{{ selectedTask.content }}</div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="closeTaskDetails">Close</button>
+          <h3 class="h4 fw-bold text-dark mb-2">Confirm Delete</h3>
+          <p class="text-secondary mb-4">Are you sure you want to delete <br/>"<strong>{{ taskToDelete.task_title }}</strong>"?</p>
+          <div class="d-flex justify-content-center gap-3">
+            <button type="button" class="btn btn-light px-4" @click="closeDeleteModal">Cancel</button>
+            <button type="button" class="btn btn-danger px-4" @click="confirmDeleteTaskBtn">Yes, Delete</button>
           </div>
         </div>
       </div>
@@ -247,13 +266,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import api from '@/js/api'
+import * as bootstrap from 'bootstrap'
 
-// --- Mock Data or state for static structure ---
-const student = ref({
-  name: 'Test Student',
-  student_id: '12345678',
-  email: 'test@student.gla.ac.uk'
-})
+
+const student = ref(null)
 
 const tasks_1_day = ref([])
 const tasks_3_day = ref([])
@@ -268,26 +285,23 @@ const toastClass = ref('text-success')
 
 // Modals State
 const newTask = ref({
-  task_title: '123',
-  content: '123',
-  deadline: '123',
-  group_id: '123'
+  task_title: '',
+  content: '',
+  deadline: '',
+  group_id: ''
 })
 const taskToDelete = ref(null)
 const selectedTask = ref(null)
 
+const deletingTaskId = ref(null)
+
 // DOM Refs for Bootstrap modals
 const toastEl = ref(null)
 const addTaskModalEl = ref(null)
-const deleteTaskModalEl = ref(null)
-const taskDetailsModalEl = ref(null)
 
 let bootstrapToast = null
 let bootstrapAddTaskModal = null
-let bootstrapDeleteModal = null
-let bootstrapDetailsModal = null
 
-// --- Methods that were requested to be kept temporarily empty/with method names ---
 
 onMounted(() => {
   // Initialization, like fetching data or initializing bootstrap modals
@@ -296,22 +310,39 @@ onMounted(() => {
 })
 
 const initBootstrapComponents = () => {
-  // Initialize standard Bootstrap modals/toasts if bootstrap is available in window
-  if (window.bootstrap) {
-    if (toastEl.value) bootstrapToast = new window.bootstrap.Toast(toastEl.value)
-    if (addTaskModalEl.value) bootstrapAddTaskModal = new window.bootstrap.Modal(addTaskModalEl.value)
-    if (deleteTaskModalEl.value) bootstrapDeleteModal = new window.bootstrap.Modal(deleteTaskModalEl.value)
-    if (taskDetailsModalEl.value) bootstrapDetailsModal = new window.bootstrap.Modal(taskDetailsModalEl.value)
+  // Initialize standard Bootstrap modals/toasts using imported bootstrap module
+  if (toastEl.value) bootstrapToast = new bootstrap.Toast(toastEl.value)
+  if (addTaskModalEl.value) bootstrapAddTaskModal = new bootstrap.Modal(addTaskModalEl.value)
+}
+
+const fetchData = async () => {
+  try {
+    const response = await api.get('/api/dashboard_data/')
+    if (response.data.success) {
+      const data = response.data.data
+      student.value = data.student
+      groups.value = data.groups
+      tasks.value = data.tasks
+      
+      tasks_1_day.value = data.tasks.filter(t => t.hours_until >= 0 && t.hours_until <= 24)
+      tasks_3_day.value = data.tasks.filter(t => t.hours_until > 24 && t.hours_until <= 72)
+      tasks_7_day.value = data.tasks.filter(t => t.hours_until > 72 && t.hours_until <= 168)
+    } else {
+      showToast(response.data.error || 'Failed to load data', false)
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+       window.location.href = '/login/'
+    } else {
+       showToast('Error fetching data', false)
+    }
   }
 }
 
-const fetchData = () => {
-  // TODO: fetch dashboard data and populate student, tasks, groups, etc.
-}
-
 const getDeadlineColorClass = (task) => {
-  // TODO: implement logic to return correct class based on task deadline
-  // classes: text-danger, text-warning, text-dark, or style color
+  if (task.is_past_due || task.hours_until <= 24) return 'text-danger'
+  if (task.hours_until <= 72) return 'text-orange'
+  if (task.hours_until <= 168) return 'text-warning'
   return 'text-dark'
 }
 
@@ -332,33 +363,130 @@ const closeAddTaskModal = () => {
   if (bootstrapAddTaskModal) bootstrapAddTaskModal.hide()
 }
 
-const submitTask = () => {
-  // TODO: Save Task Logic
-  // fetch POST to add_task
+const submitTask = async () => {
+  if (!newTask.value.task_title || !newTask.value.content || !newTask.value.deadline) {
+    showToast('Please fill in all required fields.', false)
+    return
+  }
+
+  const formattedDeadline = newTask.value.deadline.replace('T', ' ')
+
+  try {
+    const response = await api.post('/add_task/', {
+      task_title: newTask.value.task_title,
+      content: newTask.value.content,
+      deadline: formattedDeadline,
+      group_id: newTask.value.group_id
+    })
+    
+    if (response.data.success) {
+      closeAddTaskModal()
+      showToast('Task added successfully! Reloading...', true)
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } else {
+      showToast(response.data.error || 'Failed to add task.', false)
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    closeAddTaskModal()
+    showToast('An unexpected error occurred.', false)
+  }
 }
 
 const showTaskDetails = (task) => {
   selectedTask.value = task
-  if (bootstrapDetailsModal) bootstrapDetailsModal.show()
 }
 
 const closeTaskDetails = () => {
-  if (bootstrapDetailsModal) bootstrapDetailsModal.hide()
+  selectedTask.value = null
 }
 
 const openDeleteModal = (task) => {
   taskToDelete.value = task
-  if (bootstrapDeleteModal) bootstrapDeleteModal.show()
 }
 
 const closeDeleteModal = () => {
-  if (bootstrapDeleteModal) bootstrapDeleteModal.hide()
+  taskToDelete.value = null
 }
 
-const confirmDeleteTaskBtn = () => {
-  // TODO: Confirm Delete Task Logic
-  // fetch POST to delete_task
+const confirmDeleteTaskBtn = async () => {
+  if (!taskToDelete.value) return
+  deletingTaskId.value = taskToDelete.value.id
+
+  try {
+    const response = await api.post('/delete_task/', {
+      id: taskToDelete.value.id
+    })
+    if (response.data.success) {
+      // Remove task seamlessly from UI
+      tasks.value = tasks.value.filter(t => t.id !== taskToDelete.value.id)
+      tasks_1_day.value = tasks_1_day.value.filter(t => t.id !== taskToDelete.value.id)
+      tasks_3_day.value = tasks_3_day.value.filter(t => t.id !== taskToDelete.value.id)
+      tasks_7_day.value = tasks_7_day.value.filter(t => t.id !== taskToDelete.value.id)
+
+      if (selectedTask.value && selectedTask.value.id === taskToDelete.value.id) {
+        selectedTask.value = null
+      }
+      closeDeleteModal()
+      showToast('Task deleted successfully.', true)
+      // Refetch data passively to ensure stats are 100% correct if needed
+      fetchData()
+    } else {
+      showToast(response.data.error || 'Failed to delete task.', false)
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    showToast('An unexpected error occurred.', false)
+  } finally {
+    deletingTaskId.value = null
+    closeDeleteModal()
+  }
 }
 </script>
+
+<style scoped>
+.blur-backdrop {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.border-dashed {
+  border-style: dashed !important;
+}
+
+.empty-state-card {
+  transition: all 0.2s ease-in-out;
+  border-color: #dee2e6 !important;
+}
+.empty-state-card:hover {
+  background-color: #f1f3f5 !important;
+  border-color: #adb5bd !important;
+  color: #495057 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.overview-task-item {
+  cursor: pointer;
+}
+.overview-task-item:hover {
+  text-decoration: underline;
+}
+
+.text-orange { color: #fd7e14 !important; }
+</style>
 
 
