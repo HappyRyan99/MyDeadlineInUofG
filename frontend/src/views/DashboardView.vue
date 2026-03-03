@@ -54,6 +54,14 @@
                 <h5 class="card-title text-primary mb-0"><i class="bi bi-calendar3 me-2"></i>Deadline Overview</h5>
                 <button class="btn btn-sm btn-primary" @click="openAddTaskModal"><i class="bi bi-plus-lg me-1"></i>Add Deadline</button>
               </div>
+              
+              <!-- Real-time Clock Display -->
+              <div class="d-flex justify-content-center mb-4">
+                <div class="h5 fw-bold text-dark px-4 py-2 bg-light border rounded shadow-sm d-flex align-items-center bg-white mb-0">
+                  <i class="bi bi-clock-fill text-primary me-2"></i>{{ currentTime }}
+                </div>
+              </div>
+
               <div class="row text-center">
                 <div class="col-4 border-end">
                   <h5 class="fw-bold mb-3 text-danger">Within 1 Day</h5>
@@ -265,10 +273,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import api from '@/js/api'
 import * as bootstrap from 'bootstrap'
 
+const currentTime = ref('')
+let timerInterval = null
+
+const updateTime = () => {
+  const now = new Date()
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  const yyyy = now.getFullYear()
+  const MMM = monthNames[now.getMonth()]
+  const dd = String(now.getDate()).padStart(2, '0')
+  const HH = String(now.getHours()).padStart(2, '0')
+  const mm = String(now.getMinutes()).padStart(2, '0')
+  const ss = String(now.getSeconds()).padStart(2, '0')
+  currentTime.value = `${dd} ${MMM} ${yyyy} ${HH}:${mm}:${ss}`
+}
 
 const student = ref(null)
 
@@ -304,9 +326,19 @@ let bootstrapAddTaskModal = null
 
 
 onMounted(() => {
+  // Start clock
+  updateTime()
+  timerInterval = setInterval(updateTime, 1000)
+
   // Initialization, like fetching data or initializing bootstrap modals
   fetchData()
   initBootstrapComponents()
+})
+
+onUnmounted(() => {
+  if (timerInterval) {
+    clearInterval(timerInterval)
+  }
 })
 
 const initBootstrapComponents = () => {
