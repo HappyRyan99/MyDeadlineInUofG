@@ -46,13 +46,18 @@ def dashboard_data(request):
 
         tasks_data = []
         for t in tasks:
+            # Calculate precise hours difference
+            delta = t.deadline - now
+            hours_until = delta.total_seconds() / 3600.0
+            
             tasks_data.append({
                 'id': t.id,
                 'task_title': t.task_title,
                 'content': t.content,
                 'deadline': t.deadline.strftime('%Y-%m-%d %H:%M'),
-                'is_past_due': t.deadline < now,
-                'days_until': (t.deadline - now).days,
+                'is_past_due': delta.total_seconds() < 0,
+                'hours_until': hours_until,
+                'days_until': delta.days,
                 'update_time': t.update_time.isoformat() if t.update_time else None,
                 'group': {
                     'group_name': t.group.group_name,
