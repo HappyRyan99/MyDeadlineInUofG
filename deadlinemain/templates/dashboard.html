@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - MyDeadlineInUofG</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap-icons.min.css">
 
     <style>
         body {
@@ -50,8 +50,10 @@
         <div class="d-flex align-items-center">
             {% if student %}
                 <span class="me-3 text-muted">Welcome, <strong>{{ student.name }}</strong></span>
-                <a href="{% url 'course_list' %}" class="me-3 text-decoration-none text-dark"><i class="bi bi-book me-1"></i>My Course</a>
-                <a href="{% url 'my_groups' %}" class="me-3 text-decoration-none text-dark"><i class="bi bi-people me-1"></i>My Group</a>
+                <a href="{% url 'course_list' %}" class="me-3 text-decoration-none text-dark"><i
+                        class="bi bi-book me-1"></i>My Course</a>
+                <a href="{% url 'my_groups' %}" class="me-3 text-decoration-none text-dark"><i
+                        class="bi bi-people me-1"></i>My Group</a>
                 <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm">
                     <i class="bi bi-box-arrow-right me-1"></i>Logout
                 </a>
@@ -89,7 +91,8 @@
             <div class="card mb-4 shadow-sm">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title text-primary mb-0"><i class="bi bi-calendar3 me-2"></i>Deadline Overview</h5>
+                        <h5 class="card-title text-primary mb-0"><i class="bi bi-calendar3 me-2"></i>Deadline Overview
+                        </h5>
                         <button class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Deadline</button>
                     </div>
                     <div class="row text-center">
@@ -98,7 +101,8 @@
                             {% if tasks_1_day %}
                                 <ul class="list-unstyled mb-0 text-start small">
                                     {% for task in tasks_1_day %}
-                                        <li class="text-truncate ps-3"><i class="bi bi-dot"></i>{{ task.task_title }}</li>
+                                        <li class="text-truncate ps-3"><i class="bi bi-dot"></i>{{ task.task_title }}
+                                        </li>
                                     {% endfor %}
                                 </ul>
                             {% else %}
@@ -110,7 +114,8 @@
                             {% if tasks_3_day %}
                                 <ul class="list-unstyled mb-0 text-start small">
                                     {% for task in tasks_3_day %}
-                                        <li class="text-truncate ps-3"><i class="bi bi-dot"></i>{{ task.task_title }}</li>
+                                        <li class="text-truncate ps-3"><i class="bi bi-dot"></i>{{ task.task_title }}
+                                        </li>
                                     {% endfor %}
                                 </ul>
                             {% else %}
@@ -122,7 +127,8 @@
                             {% if tasks_7_day %}
                                 <ul class="list-unstyled mb-0 text-start small">
                                     {% for task in tasks_7_day %}
-                                        <li class="text-truncate ps-3"><i class="bi bi-dot"></i>{{ task.task_title }}</li>
+                                        <li class="text-truncate ps-3"><i class="bi bi-dot"></i>{{ task.task_title }}
+                                        </li>
                                     {% endfor %}
                                 </ul>
                             {% else %}
@@ -137,17 +143,22 @@
             <div class="row row-cols-1 row-cols-md-3 g-4">
                 {% for task in tasks %}
                     <div class="col">
-                        <div class="card task-card shadow-sm h-100" style="cursor: pointer;" onclick="showTaskDetails(this)"
+                        <div class="card task-card shadow-sm h-100" style="cursor: pointer;"
+                             onclick="showTaskDetails(this)"
                              data-task-id="{{ task.id }}"
                              data-task-title="{{ task.task_title }}"
                              data-task-content="{{ task.content }}"
                              data-task-deadline="{{ task.deadline|date:'Y-m-d H:i' }}"
-                             data-task-group="{% if task.group %}{{ task.group.group_name }}{% else %}Personal{% endif %}"
-                             data-task-course-name="{% if task.group %}{{ task.group.course_code.name }}{% else %}{% endif %}"
-                             data-task-course-code="{% if task.group %}{{ task.group.course_code.course_code }}{% else %}{% endif %}">
+                             data-task-group="
+                                     {% if task.group %}{{ task.group.group_name }}{% else %}Personal{% endif %}"
+                             data-task-course-name="
+                                     {% if task.group %}{{ task.group.course_code.name }}{% else %}{% endif %}"
+                             data-task-course-code="
+                                     {% if task.group %}{{ task.group.course_code.course_code }}{% else %}{% endif %}">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0 text-truncate" title="{{ task.task_title }}">{{ task.task_title }}</h5>
+                                    <h5 class="card-title mb-0 text-truncate"
+                                        title="{{ task.task_title }}">{{ task.task_title }}</h5>
                                     {% if task.group %}
                                         <span class="badge bg-secondary text-truncate" style="max-width: 100px;">Group&nbsp;Work</span>
                                     {% else %}
@@ -155,7 +166,8 @@
                                     {% endif %}
                                 </div>
                                 {% if task.group %}
-                                    <div style="font-size: 12px;" class="text-end">{{ task.group.course_code.name }}</div>
+                                    <div style="font-size: 12px;"
+                                         class="text-end">{{ task.group.course_code.name }}</div>
                                 {% endif %}
                                 <div class="flex-fill">
                                     <p style="min-height: 80px;max-height: 100px;overflow: hidden;">{{ task.content }}</p>
@@ -172,7 +184,9 @@
                             </div>
                             <div class="card-footer bg-white text-muted small d-flex justify-content-between align-items-center">
                                 <div><i class="bi bi-clock me-1"></i>Updated: {{ task.update_time|timesince }} ago</div>
-                                <button class="btn btn-sm btn-link text-danger p-0 delete-task-btn" data-task-id="{{ task.id }}" data-task-title="{{ task.task_title }}" title="Delete Task">
+                                <button class="btn btn-sm btn-link text-danger p-0 delete-task-btn"
+                                        data-task-id="{{ task.id }}" data-task-title="{{ task.task_title }}"
+                                        title="Delete Task">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
@@ -181,7 +195,8 @@
                 {% empty %}
                     <div class="col">
                         <!-- Add New (Empty State) -->
-                        <div class="card p-3 mb-3 border-dashed border-2 bg-light d-flex align-items-center justify-content-center text-muted" style="height: 100px; cursor: pointer;">
+                        <div class="card p-3 mb-3 border-dashed border-2 bg-light d-flex align-items-center justify-content-center text-muted"
+                             style="height: 100px; cursor: pointer;">
                             <div class="text-center">
                                 <i class="bi bi-plus-circle fs-4 mb-1"></i>
                                 <div>Add Deadline</div>
@@ -239,14 +254,15 @@
                     </div>
                     <div class="mb-3">
                         <label for="taskDeadline" class="form-label">Deadline</label>
-                        <input type="datetime-local"  max="2100-01-01T00:00" class="form-control" value id="taskDeadline" required>
+                        <input type="datetime-local" max="2100-01-01T00:00" class="form-control" value id="taskDeadline"
+                               required>
                     </div>
                     <div class="mb-3">
                         <label for="taskGroup" class="form-label">Group</label>
                         <select class="form-select" id="taskGroup">
                             <option value="" selected>Personal (No Group)</option>
                             {% for group in groups %}
-                                <option value="{{ group.id }}">{{group.course_code}}-{{ group.group_name }}</option>
+                                <option value="{{ group.id }}">{{ group.course_code }}-{{ group.group_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -301,11 +317,13 @@
                 </div>
                 <div class="mb-3">
                     <small class="text-muted d-block">Deadline</small>
-                    <p id="detailTaskDeadline" class="fs-5 text-danger fw-bold"><i class="bi bi-calendar-event me-2"></i><span></span></p>
+                    <p id="detailTaskDeadline" class="fs-5 text-danger fw-bold"><i
+                            class="bi bi-calendar-event me-2"></i><span></span></p>
                 </div>
                 <div class="mb-3">
                     <small class="text-muted d-block">Content</small>
-                    <div class="p-3 bg-light rounded border" id="detailTaskContent" style="white-space: pre-wrap;"></div>
+                    <div class="p-3 bg-light rounded border" id="detailTaskContent"
+                         style="white-space: pre-wrap;"></div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -317,7 +335,7 @@
 </div>
 
 <!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
 
 <script>
     // Define function globally so it can be called from onclick
@@ -344,22 +362,7 @@
         modal.show();
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // ... (Existing JS) ...
-        const addTaskButtons = document.querySelectorAll('.btn-primary[href="#"], .card[style*="cursor: pointer"]');
-        // Select toolbar button and empty state card.
-        // Note: The empty state card has click listener in inline style typically or needs one added.
-        // Let's make it consistent.
-
-        // Explicitly select the "Add Deadline" button in the toolbar
-        const toolbarAddBtn = document.querySelector('.btn-sm.btn-primary');
-        if (toolbarAddBtn) {
-            toolbarAddBtn.setAttribute('data-bs-toggle', 'modal');
-            toolbarAddBtn.setAttribute('data-bs-target', '#addTaskModal');
-            // Remove existing onclick if any
-            toolbarAddBtn.onclick = null;
-        }
-
+    document.addEventListener('DOMContentLoaded', function () {
         // Explicitly select the empty state card
         const emptyStateCard = document.querySelector('.card.border-dashed');
         if (emptyStateCard) {
@@ -383,7 +386,7 @@
             toast.show();
         }
 
-        saveTaskBtn.addEventListener('click', function() {
+        saveTaskBtn.addEventListener('click', function () {
             const title = document.getElementById('taskTitle').value;
             const content = document.getElementById('taskContent').value;
             const deadlineInput = document.getElementById('taskDeadline').value; // yyyy-mm-ddTHH:mm
@@ -434,7 +437,7 @@
         let taskToDeleteId = null;
 
         document.querySelectorAll('.delete-task-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
+            btn.addEventListener('click', function (e) {
                 e.stopPropagation(); // Prevent triggering the card click (if any)
                 taskToDeleteId = this.dataset.taskId;
                 const taskTitle = this.dataset.taskTitle;
@@ -443,7 +446,7 @@
             });
         });
 
-        document.getElementById('confirmDeleteTaskBtn').addEventListener('click', function() {
+        document.getElementById('confirmDeleteTaskBtn').addEventListener('click', function () {
             if (!taskToDeleteId) return;
 
             fetch("{% url 'delete_task' %}", {
@@ -452,7 +455,7 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: JSON.stringify({ 'id': taskToDeleteId })
+                body: JSON.stringify({'id': taskToDeleteId})
             })
                 .then(response => response.json())
                 .then(data => {

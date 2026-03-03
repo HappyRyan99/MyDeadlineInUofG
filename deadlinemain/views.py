@@ -8,7 +8,6 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 
-from .forms import LoginForm
 from .models import CourseInfo
 from .models import DeadlineTask
 from .models import GroupInfo
