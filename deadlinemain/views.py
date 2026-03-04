@@ -278,3 +278,16 @@ def delete_task(request):
     except Exception as e:
         LogUtils.d("delete_task", f"Error: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def custom_page_not_found(request, exception):
+    # Differentiate missing paths by HTTP method
+    if request.method == 'POST':
+        return JsonResponse({
+            'success': False,
+            'error': 'Not Found',
+            'message': 'The requested endpoint does not exist.',
+        }, status=404)
+
+    # For GET requests, serve the custom 404 HTML page
+    return render(request, '404.html', status=404)
