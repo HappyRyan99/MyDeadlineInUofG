@@ -1,9 +1,9 @@
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
-from .models import Student, DeadlineTask, GroupInfo
-from .utils.log_utils import LogUtils
-from .models import CourseInfo
+from deadlinemain.models import Student, DeadlineTask, GroupInfo
+from deadlinemain.utils.log_utils import LogUtils
+from deadlinemain.models import CourseInfo
 
 
 def dashboard_data(request):

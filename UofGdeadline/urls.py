@@ -22,4 +22,4 @@ urlpatterns = [
     path('', include('deadlinemain.urls')),
 ]
 
-handler404 = 'deadlinemain.views.custom_page_not_found'
+handler404 = 'deadlinemain.views.views.custom_page_not_found'
