@@ -21,3 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('deadlinemain.urls')),
 ]
+
+handler404 = 'deadlinemain.views.custom_page_not_found'
