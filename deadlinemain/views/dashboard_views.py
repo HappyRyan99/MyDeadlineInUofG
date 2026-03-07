@@ -114,3 +114,87 @@ def delete_task(request):
     except Exception as e:
         LogUtils.d("delete_task", f"Error: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@require_POST
+def add_task_log(request):
+    LogUtils.d("add_task_log", "Received add_task_log request")
+    
+    try:
+        data = json.loads(request.body)
+        task_id = data.get('task_id')
+        task_content = data.get('content')
+        
+        student_id = request.session.get('student_id')
+        if not student_id:
+            return JsonResponse({'success': False, 'error': 'Not logged in'}, status=403)
+            
+        if not task_id or not task_content:
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+            
+        if len(task_content) > 280:
+            return JsonResponse({'success': False, 'error': 'Content cannot exceed 280 characters'}, status=400)
+            
+        task = DeadlineTask.objects.get(id=task_id)
+        
+        # Check permissions
+        if task.student.student_id != student_id:
+            # If group tasks can be updated by group members in the future, we can add logic here.
+            # For now, restrict updates to the creator.
+            return JsonResponse({'success': False, 'error': 'Permission denied: You are not the creator of this task'}, status=403)
+            
+        from deadlinemain.models import DeadlineLog
+        log = DeadlineLog.objects.create(
+            task=task,
+            task_content=task_content
+        )
+        
+        # Optionally update task's update_time
+        task.save() # will trigger auto_now=True inside models if configured, but anyway updates it
+        
+        LogUtils.d("add_task_log", f"Log created for task {task_id}")
+        
+        return JsonResponse({'success': True})
+        
+    except DeadlineTask.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Task not found'}, status=404)
+    except Exception as e:
+        LogUtils.d("add_task_log", f"Error: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@require_POST
+def update_task_status(request):
+    LogUtils.d("update_task_status", "Received update_task_status request")
+    
+    try:
+        data = json.loads(request.body)
+        task_id = data.get('id')
+        status = data.get('status')
+        
+        student_id = request.session.get('student_id')
+        if not student_id:
+            return JsonResponse({'success': False, 'error': 'Not logged in'}, status=403)
+            
+        if not task_id or status is None:
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+            
+        task = DeadlineTask.objects.get(id=task_id)
+        
+        # Check permissions
+        if task.student.student_id != student_id:
+            return JsonResponse({'success': False, 'error': 'Permission denied: You are not the owner of this task'}, status=403)
+            
+        # status could be '0' or '1'
+        task.status = str(status)
+        task.save()
+        
+        LogUtils.d("update_task_status", f"Task {task_id} status updated to {status}")
+        
+        return JsonResponse({'success': True})
+        
+    except DeadlineTask.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Task not found'}, status=404)
+    except Exception as e:
+        LogUtils.d("update_task_status", f"Error: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

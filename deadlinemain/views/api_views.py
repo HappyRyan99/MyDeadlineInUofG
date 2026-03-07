@@ -49,6 +49,11 @@ def dashboard_data(request):
             # Calculate precise hours difference
             delta = t.deadline - now
             hours_until = delta.total_seconds() / 3600.0
+            logs_data = [{
+                'id': log.id,
+                'content': log.task_content,
+                'create_time': log.create_time.strftime('%Y-%m-%d %H:%M:%S')
+            } for log in t.logs.all().order_by('-create_time')]
             
             tasks_data.append({
                 'id': t.id,
@@ -58,7 +63,9 @@ def dashboard_data(request):
                 'is_past_due': delta.total_seconds() < 0,
                 'hours_until': hours_until,
                 'days_until': delta.days,
+                'status': t.status,
                 'update_time': t.update_time.isoformat() if t.update_time else None,
+                'logs': logs_data,
                 'group': {
                     'group_name': t.group.group_name,
                     'course_name': t.group.course_code.name if t.group.course_code else '',

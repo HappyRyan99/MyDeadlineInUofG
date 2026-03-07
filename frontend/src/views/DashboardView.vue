@@ -94,13 +94,17 @@
             </div>
           </div>
 
-          <h3 class="mb-3 border-bottom pb-2">Upcoming Deadlines</h3>
+          <h3 class="mb-3 border-bottom pb-2">
+            <i class="bi bi-card-checklist me-2 text-primary"></i>Upcoming Deadlines
+          </h3>
           <div class="row row-cols-1 row-cols-md-3 g-4">
-            <div v-for="task in tasks" :key="task.id" class="col">
+            <div v-for="task in active_tasks" :key="task.id" class="col">
               <div class="card shadow-sm h-100" style="cursor: pointer;" @click="showTaskDetails(task)">
                 <div class="card-body d-flex flex-column">
                   <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h5 class="card-title mb-0 text-truncate" :title="task.task_title">{{ task.task_title }}</h5>
+                    <h5 class="card-title mb-0 text-truncate" :title="task.task_title" :class="{'text-danger fw-bold': task.is_past_due}">
+                      <span v-if="task.is_past_due">[Overdue] </span>{{ task.task_title }}
+                    </h5>
                     <span v-if="task.group" class="badge bg-success text-white rounded-pill text-truncate" style="max-width: 100px;">Group&nbsp;Work</span>
                     <span v-else class="badge bg-primary text-white rounded-pill">Personal</span>
                   </div>
@@ -122,7 +126,7 @@
               </div>
             </div>
 
-            <div class="col" v-if="tasks.length === 0">
+            <div class="col" v-if="active_tasks.length === 0">
               <!-- Add New (Empty State) -->
               <div class="card p-4 mb-3 border-dashed border-2 bg-white d-flex align-items-center justify-content-center text-muted empty-state-card" style="min-height: 180px; cursor: pointer;" @click="openAddTaskModal">
                 <div class="text-center">
@@ -135,6 +139,41 @@
               </div>
             </div>
           </div>
+
+          <!-- Completed Tasks Section -->
+          <template v-if="completed_tasks.length > 0">
+            <h3 class="mb-3 border-bottom pb-2 mt-5 text-success">
+              <i class="bi bi-check2-circle me-2"></i>Completed Tasks
+            </h3>
+            <div class="row row-cols-1 row-cols-md-3 g-4 opacity-75">
+              <div v-for="task in completed_tasks" :key="task.id" class="col">
+                <div class="card shadow-sm h-100 border-success" style="cursor: pointer;" @click="showTaskDetails(task)">
+                  <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <h5 class="card-title mb-0 text-truncate text-success" :title="task.task_title">
+                        <i class="bi bi-check-circle-fill me-1"></i>{{ task.task_title }}
+                      </h5>
+                      <span v-if="task.group" class="badge bg-success text-white rounded-pill text-truncate" style="max-width: 100px;">Group&nbsp;Work</span>
+                      <span v-else class="badge bg-primary text-white rounded-pill">Personal</span>
+                    </div>
+                    <div v-if="task.group" style="font-size: 12px;" class="text-end">{{ task.group.course_name }}</div>
+                    <div class="flex-fill mt-2">
+                      <p style="min-height: 80px;max-height: 100px;overflow: hidden;" class="text-muted">{{ task.content }}</p>
+                    </div>
+                    <p class="card-text fw-bold mb-auto text-success">
+                      <i class="bi bi-calendar-check me-1"></i>Completed
+                    </p>
+                  </div>
+                  <div class="card-footer bg-white text-muted small d-flex justify-content-between align-items-center">
+                    <div><i class="bi bi-clock me-1"></i>Updated: {{ task.update_time_display || 'recently' }}</div>
+                    <button class="btn btn-sm btn-link text-danger p-0" @click.stop="openDeleteModal(task)" title="Delete Task">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
 
         </template>
         <template v-else>
@@ -205,14 +244,20 @@
     </div>
 
     <!-- Task Details Modal (from DashboardViewNew) -->
-    <div v-if="selectedTask" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1055;" @click.self="closeTaskDetails">
+    <div v-if="selectedTask" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1055;">
       <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable fade-in-up">
         <div class="modal-content border-0 shadow-lg rounded-4 bg-white bg-opacity-90 blur-backdrop">
-          <div class="modal-header border-bottom-0 pb-0">
-            <h3 class="modal-title fw-bold text-dark h4">{{ selectedTask.task_title }}</h3>
-            <button type="button" class="btn-close" @click="closeTaskDetails" aria-label="Close"></button>
+          <div class="modal-header border-bottom-0 pb-0 align-items-start">
+            <h3 class="modal-title fw-bold text-dark h4 mb-0 text-break pe-3" 
+                :class="{'text-danger': selectedTask.status === '0' && selectedTask.is_past_due}">
+              <i v-if="selectedTask.status === '1'" class="bi bi-check-circle-fill text-success me-2"></i>
+              <span v-if="selectedTask.status === '0' && selectedTask.is_past_due">[Overdue] </span>
+              {{ selectedTask.task_title }}
+            </h3>
+            <button type="button" class="btn-close mt-1 flex-shrink-0" @click="closeTaskDetails" aria-label="Close"></button>
           </div>
           <div class="modal-body py-4">          
+
             <div class="row g-3 mb-4">
               <div class="col-sm-6 text-sm">
                 <span class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem;">Deadline</span>
@@ -240,14 +285,61 @@
               <h4 class="h6 fw-bold text-dark mb-3">Description</h4>
               <p class="mb-0 text-secondary" style="line-height: 1.6; white-space: pre-wrap;">{{ selectedTask.content }}</p>
             </div>
+            
+            <div class="mt-4">
+              <h4 class="h6 fw-bold text-dark mb-3">Latest 3 Updates / Logs</h4>
+              
+              <!-- Logs List -->
+              <div v-if="selectedTask.logs && selectedTask.logs.length > 0" class="mb-3">
+                <div v-for="log in selectedTask.logs.slice(0, 3)" :key="log.id" class="card mb-2 border-0 shadow-sm bg-light">
+                  <div class="card-body p-3">
+                    <p class="mb-1 text-dark fw-bold" style="white-space: pre-wrap; font-size: 1.15rem;">{{ log.content }}</p>
+                    <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ log.create_time }}</small>
+                  </div>
+                </div>
+                <div class="text-end mt-2" v-if="selectedTask.logs.length > 3">
+                  <span class="more-logs-btn" @click="showMoreLogsToast">More</span>
+                </div>
+              </div>
+              <div v-else class="text-muted text-center mb-3 fst-italic small">No updates yet.</div>
+              
+              <!-- Add Log Form -->
+              <div class="card border-0 shadow-sm" v-if="selectedTask.status === '0'">
+                <div class="card-body p-3">
+                  <textarea class="form-control mb-2" rows="2" placeholder="Write an update (max 280 chars)..." 
+                            v-model="newLogContent" maxlength="280"></textarea>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">{{ 280 - (newLogContent ? newLogContent.length : 0) }} chars left</small>
+                    <button class="btn btn-sm btn-primary" @click="submitTaskLog" :disabled="!newLogContent.trim() || isSubmittingLog">
+                      <span v-if="isSubmittingLog" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                      Add Update
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="modal-footer border-top-0 pt-0">
-            <button type="button" class="btn btn-secondary" @click="closeTaskDetails">Close</button>
-            <button type="button" class="btn btn-danger" v-if="!deletingTaskId" @click="openDeleteModal(selectedTask)">Delete Task</button>
-            <button type="button" class="btn btn-danger disabled" v-if="deletingTaskId === selectedTask.id">
-               <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-               Deleting...
-            </button>
+          <div class="modal-footer border-top-0 pt-0 d-flex justify-content-between align-items-center">
+            <!-- Completion Switch -->
+            <div v-if="selectedTask" class="d-flex align-items-center">
+              <div v-if="selectedTask.status === '0'" class="form-check form-switch m-0 p-0 d-flex align-items-center">
+                <input class="form-check-input m-0 me-2 cursor-pointer" type="checkbox" role="switch" id="completeTaskSwitch" 
+                       :checked="false" @change="toggleTaskStatus" style="width: 2em; height: 1em;">
+                <label class="form-check-label fw-bold cursor-pointer text-primary m-0 mt-1" for="completeTaskSwitch" style="font-size: 1.1rem;">Done</label>
+              </div>
+              <div v-else class="text-success fw-bold d-flex align-items-center" style="font-size: 1rem;">
+                <i class="bi bi-check2-all me-1"></i>Completed
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-secondary" @click="closeTaskDetails">Close</button>
+              <button type="button" class="btn btn-danger" v-if="!deletingTaskId" @click="openDeleteModal(selectedTask)">Delete Task</button>
+              <button type="button" class="btn btn-danger disabled" v-if="deletingTaskId === selectedTask.id">
+                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                 Deleting...
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -298,6 +390,8 @@ const tasks_1_day = ref([])
 const tasks_3_day = ref([])
 const tasks_7_day = ref([])
 const tasks = ref([])
+const active_tasks = ref([])
+const completed_tasks = ref([])
 const groups = ref([])
 
 // Toast State
@@ -314,6 +408,9 @@ const newTask = ref({
 })
 const taskToDelete = ref(null)
 const selectedTask = ref(null)
+
+const newLogContent = ref('')
+const isSubmittingLog = ref(false)
 
 const deletingTaskId = ref(null)
 
@@ -355,10 +452,12 @@ const fetchData = async () => {
       student.value = data.student
       groups.value = data.groups
       tasks.value = data.tasks
+      active_tasks.value = data.tasks.filter(t => t.status === '0')
+      completed_tasks.value = data.tasks.filter(t => t.status === '1')
       
-      tasks_1_day.value = data.tasks.filter(t => t.hours_until >= 0 && t.hours_until <= 24)
-      tasks_3_day.value = data.tasks.filter(t => t.hours_until > 24 && t.hours_until <= 72)
-      tasks_7_day.value = data.tasks.filter(t => t.hours_until > 72 && t.hours_until <= 168)
+      tasks_1_day.value = active_tasks.value.filter(t => t.hours_until >= 0 && t.hours_until <= 24)
+      tasks_3_day.value = active_tasks.value.filter(t => t.hours_until > 24 && t.hours_until <= 72)
+      tasks_7_day.value = active_tasks.value.filter(t => t.hours_until > 72 && t.hours_until <= 168)
     } else {
       showToast(response.data.error || 'Failed to load data', false)
     }
@@ -433,6 +532,64 @@ const showTaskDetails = (task) => {
 
 const closeTaskDetails = () => {
   selectedTask.value = null
+  newLogContent.value = ''
+}
+
+const showMoreLogsToast = () => {
+  showToast('Implementation in the future', true)
+}
+
+const submitTaskLog = async () => {
+  if (!newLogContent.value.trim() || !selectedTask.value) return
+  
+  isSubmittingLog.value = true
+  try {
+    const response = await api.post('/add_task_log/', {
+      task_id: selectedTask.value.id,
+      content: newLogContent.value.trim()
+    })
+    
+    if (response.data.success) {
+      showToast('Update added successfully.', true)
+      newLogContent.value = ''
+      await fetchData()
+      const updatedTask = tasks.value.find(t => t.id === selectedTask.value.id)
+      if (updatedTask) {
+        selectedTask.value = updatedTask
+      }
+    } else {
+      showToast(response.data.error || 'Failed to add update.', false)
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    showToast('An unexpected error occurred.', false)
+  } finally {
+    isSubmittingLog.value = false
+  }
+}
+
+const toggleTaskStatus = async () => {
+  if (!selectedTask.value) return
+  
+  try {
+    const response = await api.post('/update_task_status/', {
+      id: selectedTask.value.id,
+      status: selectedTask.value.status === '0' ? '1' : '0'
+    })
+    
+    if (response.data.success) {
+      showToast('Task marked as completed! Reloading...', true)
+      closeTaskDetails()
+      setTimeout(() => {
+        window.location.reload()
+      }, 700)
+    } else {
+      showToast(response.data.error || 'Failed to update task status.', false)
+    }
+  } catch (error) {
+    console.error('Error updating status:', error)
+    showToast('Failed to connect to the server.', false)
+  }
 }
 
 const openDeleteModal = (task) => {
@@ -519,6 +676,18 @@ const confirmDeleteTaskBtn = async () => {
 }
 
 .text-orange { color: #fd7e14 !important; }
+
+.more-logs-btn {
+  cursor: pointer;
+  color: #6c757d;
+}
+.more-logs-btn:hover {
+  text-decoration: underline;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
 </style>
 
 
