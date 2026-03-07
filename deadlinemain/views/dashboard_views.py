@@ -203,3 +203,46 @@ def update_task_status(request):
     except Exception as e:
         LogUtils.d("update_task_status", f"Error: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@require_POST
+def edit_task(request):
+    LogUtils.d("edit_task", "Received edit_task request")
+    
+    try:
+        data = json.loads(request.body)
+        task_id = data.get('task_id')
+        new_title = data.get('task_title')
+        new_content = data.get('content')
+        
+        student_id = request.session.get('student_id')
+        if not student_id:
+            return JsonResponse({'success': False, 'error': 'Not logged in'}, status=403)
+            
+        if not task_id:
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+            
+        task = DeadlineTask.objects.get(id=task_id)
+        
+        # Check permissions
+        if task.student.student_id != student_id:
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+            
+        # Update fields if provided
+        if new_title is not None:
+            task.task_title = new_title.strip()
+        if new_content is not None:
+            task.content = new_content.strip()
+            
+        task.update_time = int(time.time())
+        task.save()
+        
+        LogUtils.d("edit_task", f"Task {task_id} details updated")
+        
+        return JsonResponse({'success': True})
+        
+    except DeadlineTask.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Task not found'}, status=404)
+    except Exception as e:
+        LogUtils.d("edit_task", f"Error: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

@@ -70,30 +70,10 @@
               </div>
 
               <div class="row text-center">
-                <div class="col-4 border-end">
-                  <h5 class="fw-bold mb-3 text-danger">Within 1 Day</h5>
-                  <ul v-if="tasks_1_day.length > 0" class="list-unstyled mb-0 text-start text-danger">
-                    <li v-for="task in tasks_1_day" :key="task.id" class="text-truncate ps-3 overview-task-item"
-                        @click="showTaskDetails(task)">
-                      <i class="bi bi-dot"></i>{{ task.task_title }}
-                    </li>
-                  </ul>
-                  <span v-else class="text-muted fst-italic">No deadlines</span>
-                </div>
-                <div class="col-4 border-end">
-                  <h5 class="fw-bold mb-3" style="color: #fd7e14;">Within 3 Days</h5>
-                  <ul v-if="tasks_3_day.length > 0" class="list-unstyled mb-0 text-start text-orange">
-                    <li v-for="task in tasks_3_day" :key="task.id" class="text-truncate ps-3 overview-task-item"
-                        @click="showTaskDetails(task)">
-                      <i class="bi bi-dot"></i>{{ task.task_title }}
-                    </li>
-                  </ul>
-                  <span v-else class="text-muted fst-italic">No deadlines</span>
-                </div>
-                <div class="col-4">
-                  <h5 class="fw-bold mb-3 text-warning">Within 7 Days</h5>
-                  <ul v-if="tasks_7_day.length > 0" class="list-unstyled mb-0 text-start text-warning">
-                    <li v-for="task in tasks_7_day" :key="task.id" class="text-truncate ps-3 overview-task-item"
+                <div v-for="(section, index) in overviewSections" :key="index" :class="['col-4', section.borderClass]">
+                  <h5 class="fw-bold mb-3" :class="section.colorClass">{{ section.title }}</h5>
+                  <ul v-if="section.tasks.length > 0" class="list-unstyled mb-0 text-start" :class="section.colorClass">
+                    <li v-for="task in section.tasks" :key="task.id" class="text-truncate ps-3 overview-task-item"
                         @click="showTaskDetails(task)">
                       <i class="bi bi-dot"></i>{{ task.task_title }}
                     </li>
@@ -109,34 +89,7 @@
           </h3>
           <div class="row row-cols-1 row-cols-md-3 g-4">
             <div v-for="task in active_tasks" :key="task.id" class="col">
-              <div class="card shadow-sm h-100" style="cursor: pointer;" @click="showTaskDetails(task)">
-                <div class="card-body d-flex flex-column">
-                  <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h5 class="card-title mb-0 text-truncate" :title="task.task_title"
-                        :class="{'text-danger fw-bold': task.is_past_due}">
-                      <span v-if="task.is_past_due">[Overdue] </span>{{ task.task_title }}
-                    </h5>
-                    <span v-if="task.group" class="badge bg-success text-white rounded-pill text-truncate"
-                          style="max-width: 100px;">Group&nbsp;Work</span>
-                    <span v-else class="badge bg-primary text-white rounded-pill">Personal</span>
-                  </div>
-                  <div v-if="task.group" style="font-size: 12px;" class="text-end">{{ task.group.course_name }}</div>
-                  <div class="flex-fill mt-2">
-                    <p style="min-height: 80px;max-height: 100px;overflow: hidden;">{{ task.content }}</p>
-                  </div>
-                  <p :class="['card-text fw-bold mb-auto', getDeadlineColorClass(task)]">
-                    <i class="bi bi-calendar-event me-1"></i>
-                    {{ task.deadline }}
-                  </p>
-                </div>
-                <div class="card-footer bg-white text-muted small d-flex justify-content-between align-items-center">
-                  <div><i class="bi bi-clock me-1"></i>Updated: {{ formatTimeAgo(task.update_time) }}</div>
-                  <button class="btn btn-sm btn-link text-danger p-0" @click.stop="openDeleteModal(task)"
-                          title="Delete Task">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </div>
+              <TaskCard :task="task" @show-details="showTaskDetails" @delete-task="openDeleteModal" />
             </div>
 
             <div class="col" v-if="active_tasks.length === 0">
@@ -163,35 +116,7 @@
             </h3>
             <div class="row row-cols-1 row-cols-md-3 g-4 opacity-75">
               <div v-for="task in completed_tasks" :key="task.id" class="col">
-                <div class="card shadow-sm h-100 border-success" style="cursor: pointer;"
-                     @click="showTaskDetails(task)">
-                  <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                      <h5 class="card-title mb-0 text-truncate text-success" :title="task.task_title">
-                        <i class="bi bi-check-circle-fill me-1"></i>{{ task.task_title }}
-                      </h5>
-                      <span v-if="task.group" class="badge bg-success text-white rounded-pill text-truncate"
-                            style="max-width: 100px;">Group&nbsp;Work</span>
-                      <span v-else class="badge bg-primary text-white rounded-pill">Personal</span>
-                    </div>
-                    <div v-if="task.group" style="font-size: 12px;" class="text-end">{{ task.group.course_name }}</div>
-                    <div class="flex-fill mt-2">
-                      <p style="min-height: 80px;max-height: 100px;overflow: hidden;" class="text-muted">{{
-                          task.content
-                        }}</p>
-                    </div>
-                    <p class="card-text fw-bold mb-auto text-success">
-                      <i class="bi bi-calendar-check me-1"></i>Completed
-                    </p>
-                  </div>
-                  <div class="card-footer bg-white text-muted small d-flex justify-content-between align-items-center">
-                    <div><i class="bi bi-clock me-1"></i>Updated: {{ formatTimeAgo(task.update_time) }}</div>
-                    <button class="btn btn-sm btn-link text-danger p-0" @click.stop="openDeleteModal(task)"
-                            title="Delete Task">
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </div>
+                <TaskCard :task="task" @show-details="showTaskDetails" @delete-task="openDeleteModal" />
               </div>
             </div>
           </template>
@@ -238,19 +163,28 @@
                     @click="closeAddTaskModal"></button>
           </div>
           <div class="modal-body">
-            <form id="addTaskForm" @submit.prevent="submitTask">
+            <form id="addTaskForm" @submit.prevent="submitTask" novalidate>
               <div class="mb-3">
                 <label for="taskTitle" class="form-label">Task Title</label>
-                <input type="text" class="form-control" id="taskTitle" v-model="newTask.task_title" required>
+                <input type="text" class="form-control" :class="{ 'is-invalid': formErrors.task_title }" id="taskTitle" v-model="newTask.task_title" required aria-describedby="taskTitleFeedback">
+                <div id="taskTitleFeedback" class="invalid-feedback">
+                  Please provide a task title.
+                </div>
               </div>
               <div class="mb-3">
                 <label for="taskContent" class="form-label">Content</label>
-                <textarea class="form-control" id="taskContent" rows="3" v-model="newTask.content" required></textarea>
+                <textarea class="form-control" :class="{ 'is-invalid': formErrors.content }" id="taskContent" rows="3" v-model="newTask.content" required aria-describedby="taskContentFeedback"></textarea>
+                <div id="taskContentFeedback" class="invalid-feedback">
+                  Please provide a description or content.
+                </div>
               </div>
               <div class="mb-3">
                 <label for="taskDeadline" class="form-label">Deadline</label>
-                <input type="datetime-local" max="2100-01-01T00:00" class="form-control" id="taskDeadline"
-                       v-model="newTask.deadline" required>
+                <input type="datetime-local" max="2100-01-01T00:00" class="form-control" :class="{ 'is-invalid': formErrors.deadline }" id="taskDeadline"
+                       v-model="newTask.deadline" required aria-describedby="taskDeadlineFeedback">
+                <div id="taskDeadlineFeedback" class="invalid-feedback">
+                  Please provide a valid date and time for the deadline.
+                </div>
               </div>
               <div class="mb-3">
                 <label for="taskGroup" class="form-label">Group</label>
@@ -279,11 +213,24 @@
       <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable fade-in-up">
         <div class="modal-content border-0 shadow-lg rounded-4 bg-white bg-opacity-90 blur-backdrop">
           <div class="modal-header border-bottom-0 pb-0 align-items-start">
-            <h3 class="modal-title fw-bold text-dark h4 mb-0 text-break pe-3"
+            <h3 class="modal-title fw-bold text-dark h4 mb-0 text-break pe-3 w-100 d-flex align-items-center"
                 :class="{'text-danger': selectedTask.status === '0' && selectedTask.is_past_due}">
               <i v-if="selectedTask.status === '1'" class="bi bi-check-circle-fill text-success me-2"></i>
               <span v-if="selectedTask.status === '0' && selectedTask.is_past_due">[Overdue] </span>
-              {{ selectedTask.task_title }}
+              
+              <!-- Title Edit Mode -->
+              <div v-if="editingField === 'title'" class="d-flex w-100 align-items-center">
+                <input type="text" class="form-control me-2" v-model="editTitleValue" @keyup.enter="saveTaskEdit('title')" @keyup.esc="cancelTaskEdit" autofocus>
+                <button class="btn btn-sm btn-success me-1 px-2" @click="saveTaskEdit('title')"><i class="bi bi-check-lg"></i></button>
+                <button class="btn btn-sm btn-secondary px-2" @click="cancelTaskEdit"><i class="bi bi-x-lg"></i></button>
+              </div>
+              <!-- Title Display Mode -->
+              <div v-else class="d-flex align-items-center">
+                <span>{{ selectedTask.task_title }}</span>
+                <button class="btn btn-sm btn-link text-secondary p-0 ms-2" @click="startTaskEdit('title')" title="Edit Title">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </div>
             </h3>
             <button type="button" class="btn-close mt-1 flex-shrink-0" @click="closeTaskDetails"
                     aria-label="Close"></button>
@@ -319,8 +266,23 @@
             </div>
 
             <div class="bg-light bg-opacity-50 rounded-3 p-4 border border-1">
-              <h4 class="h6 fw-bold text-dark mb-3">Description</h4>
-              <p class="mb-0 text-secondary" style="line-height: 1.6; white-space: pre-wrap;">{{
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="h6 fw-bold text-dark mb-0">Description</h4>
+                <button v-if="editingField !== 'content'" class="btn btn-sm btn-link text-secondary p-0" @click="startTaskEdit('content')" title="Edit Description">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </div>
+              
+              <!-- Content Edit Mode -->
+              <div v-if="editingField === 'content'">
+                <textarea class="form-control mb-2" rows="4" v-model="editContentValue" @keyup.esc="cancelTaskEdit" autofocus></textarea>
+                <div class="d-flex justify-content-end">
+                  <button class="btn btn-sm btn-secondary me-2" @click="cancelTaskEdit">Cancel</button>
+                  <button class="btn btn-sm btn-success" @click="saveTaskEdit('content')">Save</button>
+                </div>
+              </div>
+              <!-- Content Display Mode -->
+              <p v-else class="mb-0 text-secondary" style="line-height: 1.6; white-space: pre-wrap;">{{
                   selectedTask.content
                 }}</p>
             </div>
@@ -416,9 +378,11 @@
 </template>
 
 <script setup>
-import {ref, onMounted, onUnmounted} from 'vue'
+import {ref, computed, onMounted, onUnmounted} from 'vue'
 import api from '@/js/api'
 import * as bootstrap from 'bootstrap'
+import TaskCard from '@/components/TaskCard.vue'
+import { formatTimeAgo, getDeadlineColorClass, formatGroupOption } from '@/utils/taskUtils'
 
 const currentTime = ref('')
 let timerInterval = null
@@ -445,6 +409,12 @@ const active_tasks = ref([])
 const completed_tasks = ref([])
 const groups = ref([])
 
+const overviewSections = computed(() => [
+  { title: 'Within 1 Day', tasks: tasks_1_day.value, colorClass: 'text-danger', borderClass: 'border-end' },
+  { title: 'Within 3 Days', tasks: tasks_3_day.value, colorClass: 'text-orange', borderClass: 'border-end' },
+  { title: 'Within 7 Days', tasks: tasks_7_day.value, colorClass: 'text-warning', borderClass: '' }
+])
+
 // Toast State
 const toastTitle = ref('Notification')
 const toastMessage = ref('Msg')
@@ -457,6 +427,20 @@ const newTask = ref({
   deadline: '',
   group_id: ''
 })
+
+const formErrors = ref({
+  task_title: false,
+  content: false,
+  deadline: false
+})
+
+const resetFormErrors = () => {
+  formErrors.value = {
+    task_title: false,
+    content: false,
+    deadline: false
+  }
+}
 const taskToDelete = ref(null)
 const selectedTask = ref(null)
 
@@ -464,6 +448,11 @@ const newLogContent = ref('')
 const isSubmittingLog = ref(false)
 
 const deletingTaskId = ref(null)
+
+// Edit Task State
+const editingField = ref(null) // 'title' or 'content'
+const editTitleValue = ref('')
+const editContentValue = ref('')
 
 // DOM Refs for Bootstrap modals
 const toastEl = ref(null)
@@ -521,44 +510,7 @@ const fetchData = async () => {
   }
 }
 
-const getDeadlineColorClass = (task) => {
-  if (task.is_past_due || task.hours_until <= 24) return 'text-danger'
-  if (task.hours_until <= 72) return 'text-orange'
-  if (task.hours_until <= 168) return 'text-warning'
-  return 'text-dark'
-}
 
-const formatGroupOption = (group) => {
-  const text = `${group.course_code} - ${group.course_name} (${group.group_name})`
-  const MAX_LENGTH = 60
-  if (text.length > MAX_LENGTH) {
-    return text.substring(0, MAX_LENGTH - 3) + '...'
-  }
-  return text
-}
-
-const formatTimeAgo = (dateString) => {
-  if (!dateString) return 'recently'
-  
-  const now = new Date()
-  const dateStrUtc = dateString.endsWith('Z') || dateString.includes('+') ? dateString : dateString + 'Z'
-  const date = new Date(dateStrUtc)
-  
-  if (isNaN(date.getTime())) return 'recently'
-
-  // Server gives timezone aware string. We calculate diff in hours then convert to days.
-  const diffInMs = now - date
-  const diffInSeconds = Math.floor(diffInMs / 1000)
-  const diffInMinutes = Math.floor(diffInSeconds / 60)
-  const diffInHours = Math.floor(diffInMinutes / 60)
-  const diffInDays = Math.floor(diffInHours / 24)
-
-  if (diffInSeconds < 60) return `Just now`
-  if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`
-  if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
-  
-  return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
-}
 
 const showToast = (message, isSuccess = true) => {
   toastTitle.value = isSuccess ? 'Success' : 'Error'
@@ -575,11 +527,27 @@ const openAddTaskModal = () => {
 
 const closeAddTaskModal = () => {
   if (bootstrapAddTaskModal) bootstrapAddTaskModal.hide()
+  resetFormErrors()
 }
 
 const submitTask = async () => {
-  if (!newTask.value.task_title || !newTask.value.content || !newTask.value.deadline) {
-    showToast('Please fill in all required fields.', false)
+  resetFormErrors()
+  let hasError = false
+
+  if (!newTask.value.task_title || !newTask.value.task_title.trim()) {
+    formErrors.value.task_title = true
+    hasError = true
+  }
+  if (!newTask.value.content || !newTask.value.content.trim()) {
+    formErrors.value.content = true
+    hasError = true
+  }
+  if (!newTask.value.deadline) {
+    formErrors.value.deadline = true
+    hasError = true
+  }
+
+  if (hasError) {
     return
   }
 
@@ -616,6 +584,76 @@ const showTaskDetails = (task) => {
 const closeTaskDetails = () => {
   selectedTask.value = null
   newLogContent.value = ''
+  editingField.value = null
+}
+
+const startTaskEdit = (field) => {
+  editingField.value = field
+  if (field === 'title') {
+    editTitleValue.value = selectedTask.value.task_title
+  } else if (field === 'content') {
+    editContentValue.value = selectedTask.value.content
+  }
+}
+
+const cancelTaskEdit = () => {
+  editingField.value = null
+}
+
+const saveTaskEdit = async (field) => {
+  if (!selectedTask.value) return
+
+  let payload = { task_id: selectedTask.value.id }
+  
+  if (field === 'title') {
+    if (!editTitleValue.value.trim()) {
+      showToast('Title cannot be empty', false)
+      return
+    }
+    payload.task_title = editTitleValue.value.trim()
+  } else if (field === 'content') {
+    if (!editContentValue.value.trim()) {
+      showToast('Description cannot be empty', false)
+      return
+    }
+    payload.content = editContentValue.value.trim()
+  }
+
+  try {
+    const response = await api.post('/edit_task/', payload)
+    
+    if (response.data.success) {
+      // Update local state without full reload
+      if (field === 'title') {
+        selectedTask.value.task_title = payload.task_title
+      } else if (field === 'content') {
+        selectedTask.value.content = payload.content
+      }
+      
+      // Also update in the main lists
+      const updateList = (list) => {
+        const index = list.findIndex(t => t.id === selectedTask.value.id)
+        if (index !== -1) {
+          if (field === 'title') list[index].task_title = payload.task_title
+          if (field === 'content') list[index].content = payload.content
+        }
+      }
+      updateList(tasks.value)
+      updateList(active_tasks.value)
+      updateList(completed_tasks.value)
+      updateList(tasks_1_day.value)
+      updateList(tasks_3_day.value)
+      updateList(tasks_7_day.value)
+
+      showToast('Task updated successfully', true)
+      editingField.value = null
+    } else {
+      showToast(response.data.error || 'Failed to update task', false)
+    }
+  } catch (error) {
+    console.error('Error updating task:', error)
+    showToast('Failed to connect to the server', false)
+  }
 }
 
 const showMoreLogsToast = () => {
