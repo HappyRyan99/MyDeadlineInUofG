@@ -1,11 +1,15 @@
+import time
+from datetime import datetime
+
 from django.http import JsonResponse
-from django.utils import timezone
-from datetime import timedelta
+
+from deadlinemain.models import CourseInfo
 from deadlinemain.models import Student, DeadlineTask, GroupInfo
 from deadlinemain.utils.log_utils import LogUtils
-from deadlinemain.models import CourseInfo
 
-
+day_second = 86400
+time_format_HM = '%Y-%m-%d %H:%M'
+time_format_HMS = '%Y-%m-%d %H:%M:%S'
 def dashboard_data(request):
     LogUtils.d("dashboard_data", f"enter this")
     """
@@ -37,34 +41,36 @@ def dashboard_data(request):
         } for group in user_groups]
 
         # Tasks Info
-        now = timezone.now()
+        now_int = int(time.time())
         tasks = DeadlineTask.objects.filter(student=student).order_by('deadline')
 
-        one_day_limit = now + timedelta(days=1)
-        three_day_limit = now + timedelta(days=3)
-        seven_day_limit = now + timedelta(days=7)
+        one_day_limit_str = datetime.fromtimestamp(now_int + day_second).strftime(time_format_HM)
+        three_day_limit_str = datetime.fromtimestamp(now_int + 3 * day_second).strftime(time_format_HM)
+        seven_day_limit_str = datetime.fromtimestamp(now_int + 7 * day_second).strftime(time_format_HM)
+        now_str = datetime.fromtimestamp(now_int).strftime(time_format_HM)
 
         tasks_data = []
         for t in tasks:
             # Calculate precise hours difference
-            delta = t.deadline - now
-            hours_until = delta.total_seconds() / 3600.0
+            delta_seconds = t.deadline - now_int
+            hours_until = delta_seconds / 3600.0
             logs_data = [{
                 'id': log.id,
                 'content': log.task_content,
-                'create_time': log.create_time.strftime('%Y-%m-%d %H:%M:%S')
+                'create_time': datetime.fromtimestamp(log.create_time).strftime(time_format_HMS)
             } for log in t.logs.all().order_by('-create_time')]
             
             tasks_data.append({
                 'id': t.id,
                 'task_title': t.task_title,
                 'content': t.content,
-                'deadline': t.deadline.strftime('%Y-%m-%d %H:%M'),
-                'is_past_due': delta.total_seconds() < 0,
+                'deadline': datetime.fromtimestamp(t.deadline).strftime(time_format_HM),
+                'is_past_due': delta_seconds < 0,
                 'hours_until': hours_until,
-                'days_until': delta.days,
+                'days_until': int(delta_seconds / day_second),
                 'status': t.status,
-                'update_time': t.update_time.isoformat() if t.update_time else None,
+                'update_time': datetime.fromtimestamp(t.update_time).isoformat() + 'Z' if t.update_time else None,
+                'update_time_display': datetime.fromtimestamp(t.update_time).strftime(time_format_HM) if t.update_time else None,
                 'logs': logs_data,
                 'group': {
                     'group_name': t.group.group_name,
@@ -76,14 +82,11 @@ def dashboard_data(request):
         # Limits and categorized for stats
         stats = {
             'tasks_1_day': [t['task_title'] for t in tasks_data if
-                            t['deadline'] <= one_day_limit.strftime('%Y-%m-%d %H:%M') and t['deadline'] >= now.strftime(
-                                '%Y-%m-%d %H:%M')],
+                            t['deadline'] <= one_day_limit_str and t['deadline'] >= now_str],
             'tasks_3_day': [t['task_title'] for t in tasks_data if
-                            t['deadline'] <= three_day_limit.strftime('%Y-%m-%d %H:%M') and t[
-                                'deadline'] >= now.strftime('%Y-%m-%d %H:%M')],
+                            t['deadline'] <= three_day_limit_str and t['deadline'] >= now_str],
             'tasks_7_day': [t['task_title'] for t in tasks_data if
-                            t['deadline'] <= seven_day_limit.strftime('%Y-%m-%d %H:%M') and t[
-                                'deadline'] >= now.strftime('%Y-%m-%d %H:%M')],
+                            t['deadline'] <= seven_day_limit_str and t['deadline'] >= now_str],
         }
 
         return JsonResponse({

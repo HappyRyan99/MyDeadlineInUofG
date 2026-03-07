@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+import time
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -48,7 +49,8 @@ def add_task(request):
 
         # Parse deadline
         try:
-            deadline = datetime.strptime(deadline_str, '%Y-%m-%d %H:%M')
+            deadline_dt = datetime.strptime(deadline_str, '%Y-%m-%d %H:%M')
+            deadline = int(deadline_dt.timestamp())
         except ValueError:
             return JsonResponse({'success': False, 'error': 'Invalid date format. Expected yyyy-mm-dd HH:mm'},
                                 status=400)
@@ -68,7 +70,8 @@ def add_task(request):
             task_title=task_title,
             content=content,
             deadline=deadline,
-            status='0'  # Default status
+            status='0',  # Default status
+            update_time=int(time.time())
         )
 
         LogUtils.d("add_task", f"Task created: {task.task_title} (ID: {task.id})")
@@ -146,12 +149,13 @@ def add_task_log(request):
         from deadlinemain.models import DeadlineLog
         log = DeadlineLog.objects.create(
             task=task,
-            task_content=task_content
+            task_content=task_content,
+            create_time=int(time.time())
         )
         
-        # Optionally update task's update_time
-        task.save() # will trigger auto_now=True inside models if configured, but anyway updates it
-        
+        # update task's update_time
+        task.update_time = int(time.time())
+        task.save() 
         LogUtils.d("add_task_log", f"Log created for task {task_id}")
         
         return JsonResponse({'success': True})
@@ -187,6 +191,7 @@ def update_task_status(request):
             
         # status could be '0' or '1'
         task.status = str(status)
+        task.update_time = int(time.time()) # Update update_time
         task.save()
         
         LogUtils.d("update_task_status", f"Task {task_id} status updated to {status}")

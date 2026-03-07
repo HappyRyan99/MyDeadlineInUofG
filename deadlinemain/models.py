@@ -33,7 +33,7 @@ class GroupInfo(models.Model):
 
 
 class GroupMember(models.Model):
-    id = models.CharField(primary_key=True, default=models, editable=False)
+    id = models.CharField(max_length=50, primary_key=True, editable=False)
     group = models.ForeignKey(GroupInfo, on_delete=models.CASCADE, related_name='members')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='group_memberships')
 
@@ -46,9 +46,9 @@ class DeadlineTask(models.Model):
     group = models.ForeignKey(GroupInfo, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
     task_title = models.CharField(max_length=200)
     content = models.TextField()
-    deadline = models.DateTimeField()
+    deadline = models.BigIntegerField()
     status = models.CharField(max_length=50)  # Could use choices
-    update_time = models.DateTimeField(auto_now=True)
+    update_time = models.BigIntegerField()
 
     def __str__(self):
         return self.task_title
@@ -57,7 +57,7 @@ class DeadlineTask(models.Model):
 class DeadlineLog(models.Model):
     task = models.ForeignKey(DeadlineTask, on_delete=models.CASCADE, related_name='logs')
     task_content = models.TextField()
-    create_time = models.DateTimeField(auto_now_add=True)
+    create_time = models.BigIntegerField()
 
     def __str__(self):
         return f"Log for {self.task.task_title}"
