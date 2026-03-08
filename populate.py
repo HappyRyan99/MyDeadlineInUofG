@@ -4,9 +4,12 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'UofGdeadline.settings')
 django.setup()
 
-from deadlinemain.models import CourseInfo, GroupInfo, Student
+from deadlinemain.models import CourseInfo, GroupInfo, Student, DeadlineItem
+
 # Create 3 new students: Sky, Cloud, Ground
 from django.contrib.auth.hashers import make_password
+import time
+import random
 
 
 def populate():
@@ -67,6 +70,42 @@ def populate():
                 print(f"Group already exists: {group.group_name} for {course.course_code}")
         except CourseInfo.DoesNotExist:
             print(f"Error: Course {group_data['code']} not found for group {group_data['name']}")
+
+    # Populate Deadlines for student 123456
+    print("Populating deadlines for student 123456...")
+    try:
+        student_123456 = Student.objects.get(student_id='123456')
+        all_groups = list(GroupInfo.objects.filter(student=student_123456))
+
+        current_time = int(time.time())
+        day_in_seconds = 86400
+
+        for i in range(1, 6):
+            # Randomly pick a group or None
+            if all_groups and random.random() > 0.2:
+                group = random.choice(all_groups)
+            else:
+                group = None
+            # Deadline between 1 and 7 days from now
+            deadline_time = current_time + random.randint(1, 7) * day_in_seconds
+
+            deadline_item, created = DeadlineItem.objects.get_or_create(
+                student=student_123456,
+                deadline_title=f"Deadline {i}",
+                defaults={
+                    'content': "Deadline content",
+                    'deadline': deadline_time,
+                    'status': "0",
+                    'update_time': current_time,
+                    'group': group
+                }
+            )
+            if created:
+                print(f"Created deadline: {deadline_item.deadline_title}")
+            else:
+                print(f"Deadline already exists: {deadline_item.deadline_title}")
+    except Student.DoesNotExist:
+        print("Student 123456 not found, skipping deadline population.")
 
 
 if __name__ == '__main__':
