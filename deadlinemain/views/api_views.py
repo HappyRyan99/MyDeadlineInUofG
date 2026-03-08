@@ -145,7 +145,6 @@ def course_list_data(request):
         LogUtils.d("course_list_data", f"Error: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-
 def my_groups_data(request):
     """
     Returns the data needed to render the Vue Groups view.
@@ -158,19 +157,49 @@ def my_groups_data(request):
 
     try:
         student = Student.objects.get(student_id=student_id)
-        groups = GroupInfo.objects.filter(student__student_id=student.student_id)
+        # Groups where the student is a creator OR a member
+        created_groups = GroupInfo.objects.filter(student=student)
+        member_groups_std = GroupInfo.objects.filter(members__student=student)
+        member_groups_id = GroupInfo.objects.filter(members__member_student_id=student.student_id)
+
+        groups = (created_groups | member_groups_std | member_groups_id).distinct()
 
         groups_data = []
         for group in groups:
-            members = [{'name': m.student.name} for m in group.members.all()]
+            members = []
+            for m in group.members.all():
+                if m.student:
+                    members.append({
+                        'id': m.id,
+                        'name': m.student.name,
+                        'student_id': m.student.student_id,
+                        'is_manual': False
+                    })
+                else:
+                    members.append({
+                        'id': m.id,
+                        'name': m.member_name,
+                        'student_id': m.member_student_id,
+                        'is_manual': True
+                    })
+
             groups_data.append({
                 'id': group.id,
                 'group_name': group.group_name,
                 'course_code': group.course_code.course_code if group.course_code else '',
                 'course_name': group.course_code.name if group.course_code else '',
                 'creator_name': group.student.name if group.student else 'Unknown',
+                'is_creator': group.student == student,
                 'members': members
             })
+
+        # Fetch courses for dropdown
+        courses = CourseInfo.objects.filter(student=student)
+        courses_data = [{
+            'id': c.id,
+            'course_code': c.course_code,
+            'name': c.name
+        } for c in courses]
 
         return JsonResponse({
             'success': True,
@@ -179,7 +208,8 @@ def my_groups_data(request):
                     'name': student.name,
                     'student_id': student.student_id
                 },
-                'groups': groups_data
+                'groups': groups_data,
+                'courses': courses_data
             }
         })
     except Student.DoesNotExist:
