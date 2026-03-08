@@ -24,5 +24,8 @@ urlpatterns = [
     path('api/dashboard_data/', api_views.dashboard_data, name='dashboard_data'),
     path('api/courses_data/', api_views.course_list_data, name='courses_data'),
     path('api/groups_data/', api_views.my_groups_data, name='groups_data'),
-
+    path('api/add_group/', group_views.add_group, name='add_group'),
+    path('api/add_group_member/', group_views.add_group_member, name='add_group_member'),
+    path('api/delete_group_member/', group_views.delete_group_member, name='delete_group_member'),
+    path('api/delete_group/', group_views.delete_group, name='delete_group'),
 ]

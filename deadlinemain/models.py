@@ -33,12 +33,14 @@ class GroupInfo(models.Model):
 
 
 class GroupMember(models.Model):
-    id = models.CharField(max_length=50, primary_key=True, editable=False)
     group = models.ForeignKey(GroupInfo, on_delete=models.CASCADE, related_name='members')
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='group_memberships')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='group_memberships', null=True, blank=True)
+    member_student_id = models.CharField(max_length=10, null=True, blank=True)
+    member_name = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.student.name} in {self.group.group_name}"
+        name = self.student.name if self.student else self.member_name
+        return f"{name} in {self.group.group_name}"
 
 
 class DeadlineItem(models.Model):
