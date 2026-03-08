@@ -21,9 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!xn7i-!nif^#67340+egn-gi&m19+hf*(d2k6+d_2r_nld6ad9'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost']
 
 # Application definition
@@ -53,7 +50,7 @@ ROOT_URLCONF = 'UofGdeadline.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'frontend' / 'dist'],
+        'DIRS': [BASE_DIR / 'www'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -110,11 +107,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 MEDIA_ROOT = MEDIA_DIR
 MEDIA_URL = '/media/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'frontend' / 'dist',
-    os.path.join(BASE_DIR, 'static'),
+    BASE_DIR / 'www',
 ]
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = False
