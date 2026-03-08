@@ -8,3 +8,4 @@ db.sqlite3.bak
 __pycache__/
 *.pyc
 *.iml
+/staticfiles/
