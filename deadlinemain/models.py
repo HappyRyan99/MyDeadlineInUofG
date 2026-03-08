@@ -41,23 +41,23 @@ class GroupMember(models.Model):
         return f"{self.student.name} in {self.group.group_name}"
 
 
-class DeadlineTask(models.Model):
-    student = models.ForeignKey(Student, to_field='student_id', on_delete=models.CASCADE, related_name='created_tasks')
-    group = models.ForeignKey(GroupInfo, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
-    task_title = models.CharField(max_length=200)
+class DeadlineItem(models.Model):
+    student = models.ForeignKey(Student, to_field='student_id', on_delete=models.CASCADE, related_name='created_deadlines')
+    group = models.ForeignKey(GroupInfo, on_delete=models.CASCADE, related_name='deadlines', null=True, blank=True)
+    deadline_title = models.CharField(max_length=200)
     content = models.TextField()
     deadline = models.BigIntegerField()
     status = models.CharField(max_length=50)  # Could use choices
     update_time = models.BigIntegerField()
 
     def __str__(self):
-        return self.task_title
+        return self.deadline_title
 
 
 class DeadlineLog(models.Model):
-    task = models.ForeignKey(DeadlineTask, on_delete=models.CASCADE, related_name='logs')
-    task_content = models.TextField()
+    deadline = models.ForeignKey(DeadlineItem, on_delete=models.CASCADE, related_name='logs')
+    deadline_content = models.TextField()
     create_time = models.BigIntegerField()
 
     def __str__(self):
-        return f"Log for {self.task.task_title}"
+        return f"Log for {self.deadline.deadline_title}"

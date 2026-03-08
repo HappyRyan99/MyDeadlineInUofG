@@ -4,7 +4,7 @@ from datetime import datetime
 
 from django.test import TestCase, Client
 
-from deadlinemain.models import Student, DeadlineTask
+from deadlinemain.models import Student, DeadlineItem
 
 
 class DashboardViewsTestCase(TestCase):
@@ -22,20 +22,20 @@ class DashboardViewsTestCase(TestCase):
         session.save()
         
         # Test URLs
-        self.add_task_url = '/add_task/'
-        self.update_task_status_url = '/update_task_status/'
+        self.add_deadline_url = '/add_deadline/'
+        self.update_deadline_status_url = '/update_deadline_status/'
 
-    def test_add_task_success(self):
+    def test_add_deadline_success(self):
         # We define a deadline strictly in the yyyy-mm-dd HH:MM format
         deadline_str = '2026-10-31 23:59'
         payload = {
-            'task_title': 'Integration Test Task',
+            'deadline_title': 'Integration Test Task',
             'content': 'This is a test content',
             'deadline': deadline_str
         }
         
         response = self.client.post(
-            self.add_task_url, 
+            self.add_deadline_url, 
             data=json.dumps(payload), 
             content_type='application/json'
         )
@@ -44,26 +44,26 @@ class DashboardViewsTestCase(TestCase):
         resp_data = response.json()
         self.assertTrue(resp_data.get('success'), f"Response error: {resp_data.get('error')}")
         
-        # Verify the task was created in DB and timestamp was generated correctly
-        task = DeadlineTask.objects.first()
-        self.assertIsNotNone(task)
-        self.assertEqual(task.task_title, 'Integration Test Task')
-        self.assertEqual(task.status, '0')
+        # Verify the deadline was created in DB and timestamp was generated correctly
+        deadline = DeadlineItem.objects.first()
+        self.assertIsNotNone(deadline)
+        self.assertEqual(deadline.deadline_title, 'Integration Test Task')
+        self.assertEqual(deadline.status, '0')
         
         # Verify integer timestamps
-        self.assertIsInstance(task.deadline, int)
-        self.assertIsInstance(task.update_time, int)
+        self.assertIsInstance(deadline.deadline, int)
+        self.assertIsInstance(deadline.update_time, int)
         
         # Verify the integer holds the correct parsed time
         expected_dt = datetime.strptime(deadline_str, '%Y-%m-%d %H:%M')
         expected_timestamp = int(expected_dt.timestamp())
-        self.assertEqual(task.deadline, expected_timestamp)
+        self.assertEqual(deadline.deadline, expected_timestamp)
         
-    def test_update_task_status(self):
+    def test_update_deadline_status(self):
         initial_timestamp = int(time.time()) - 1000  # Some time in the past
-        task = DeadlineTask.objects.create(
+        deadline = DeadlineItem.objects.create(
             student=self.student,
-            task_title='Task to complete',
+            deadline_title='Task to complete',
             content='Wait for it',
             deadline=initial_timestamp + 86400,
             status='0',
@@ -71,12 +71,12 @@ class DashboardViewsTestCase(TestCase):
         )
         
         payload = {
-            'id': task.id,
+            'id': deadline.id,
             'status': '1'
         }
         
         response = self.client.post(
-            self.update_task_status_url,
+            self.update_deadline_status_url,
             data=json.dumps(payload),
             content_type='application/json'
         )
@@ -85,9 +85,9 @@ class DashboardViewsTestCase(TestCase):
         self.assertTrue(response.json().get('success'))
         
         # Refresh from DB
-        task.refresh_from_db()
-        self.assertEqual(task.status, '1')
+        deadline.refresh_from_db()
+        self.assertEqual(deadline.status, '1')
         
         # Ensure update_time was updated to a recent integer Unix timestamp
-        self.assertIsInstance(task.update_time, int)
-        self.assertGreater(task.update_time, initial_timestamp)
+        self.assertIsInstance(deadline.update_time, int)
+        self.assertGreater(deadline.update_time, initial_timestamp)

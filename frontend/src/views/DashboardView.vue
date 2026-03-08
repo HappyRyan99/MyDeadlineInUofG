@@ -56,7 +56,7 @@
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="card-title text-primary mb-0"><i class="bi bi-calendar3 me-2"></i>Deadline Overview</h5>
-                <button class="btn btn-sm btn-primary" @click="openAddTaskModal"><i class="bi bi-plus-lg me-1"></i>Add
+                <button class="btn btn-sm btn-primary" @click="openAddDeadlineModal"><i class="bi bi-plus-lg me-1"></i>Add
                   Deadline
                 </button>
               </div>
@@ -72,10 +72,10 @@
               <div class="row text-center">
                 <div v-for="(section, index) in overviewSections" :key="index" :class="['col-4', section.borderClass]">
                   <h5 class="fw-bold mb-3" :class="section.colorClass">{{ section.title }}</h5>
-                  <ul v-if="section.tasks.length > 0" class="list-unstyled mb-0 text-start" :class="section.colorClass">
-                    <li v-for="task in section.tasks" :key="task.id" class="text-truncate ps-3 overview-task-item"
-                        @click="showTaskDetails(task)">
-                      <i class="bi bi-dot"></i>{{ task.task_title }}
+                  <ul v-if="section.deadlines.length > 0" class="list-unstyled mb-0 text-start" :class="section.colorClass">
+                    <li v-for="deadline in section.deadlines" :key="deadline.id" class="text-truncate ps-3 overview-deadline-item"
+                        @click="showDeadlineDetails(deadline)">
+                      <i class="bi bi-dot"></i>{{ deadline.deadline_title }}
                     </li>
                   </ul>
                   <span v-else class="text-muted fst-italic">No deadlines</span>
@@ -88,15 +88,15 @@
             <i class="bi bi-card-checklist me-2 text-primary"></i>Upcoming Deadlines
           </h3>
           <div class="row row-cols-1 row-cols-md-3 g-4">
-            <div v-for="task in active_tasks" :key="task.id" class="col">
-              <TaskCard :task="task" @show-details="showTaskDetails" @delete-task="openDeleteModal" />
+            <div v-for="deadline in active_deadlines" :key="deadline.id" class="col">
+              <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails" @delete-deadline="openDeleteModal" />
             </div>
 
-            <div class="col" v-if="active_tasks.length === 0">
+            <div class="col" v-if="active_deadlines.length === 0">
               <!-- Add New (Empty State) -->
               <div
                   class="card p-4 mb-3 border-dashed border-2 bg-white d-flex align-items-center justify-content-center text-muted empty-state-card"
-                  style="min-height: 180px; cursor: pointer;" @click="openAddTaskModal">
+                  style="min-height: 180px; cursor: pointer;" @click="openAddDeadlineModal">
                 <div class="text-center">
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                        stroke-linecap="round" stroke-linejoin="round" class="mb-2 text-secondary" style="opacity: 0.7;">
@@ -109,14 +109,14 @@
             </div>
           </div>
 
-          <!-- Completed Tasks Section -->
-          <template v-if="completed_tasks.length > 0">
+          <!-- Completed Deadlines Section -->
+          <template v-if="completed_deadlines.length > 0">
             <h3 class="mb-3 border-bottom pb-2 mt-5 text-success">
-              <i class="bi bi-check2-circle me-2"></i>Completed Tasks
+              <i class="bi bi-check2-circle me-2"></i>Completed Deadlines
             </h3>
             <div class="row row-cols-1 row-cols-md-3 g-4 opacity-75">
-              <div v-for="task in completed_tasks" :key="task.id" class="col">
-                <TaskCard :task="task" @show-details="showTaskDetails" @delete-task="openDeleteModal" />
+              <div v-for="deadline in completed_deadlines" :key="deadline.id" class="col">
+                <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails" @delete-deadline="openDeleteModal" />
               </div>
             </div>
           </template>
@@ -152,43 +152,43 @@
       </div>
     </div>
 
-    <!-- Add Task Modal -->
-    <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true"
-         data-bs-backdrop="static" data-bs-keyboard="false" ref="addTaskModalEl">
+    <!-- Add Deadline Modal -->
+    <div class="modal fade" id="addDeadlineModal" tabindex="-1" aria-labelledby="addDeadlineModalLabel" aria-hidden="true"
+         data-bs-backdrop="static" data-bs-keyboard="false" ref="addDeadlineModalEl">
       <div class="modal-dialog" style="max-width: 550px;">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
+            <h5 class="modal-title" id="addDeadlineModalLabel">Add New Deadline</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                    @click="closeAddTaskModal"></button>
+                    @click="closeAddDeadlineModal"></button>
           </div>
           <div class="modal-body">
-            <form id="addTaskForm" @submit.prevent="submitTask" novalidate>
+            <form id="addDeadlineForm" @submit.prevent="submitDeadline" novalidate>
               <div class="mb-3">
-                <label for="taskTitle" class="form-label">Task Title</label>
-                <input type="text" class="form-control" :class="{ 'is-invalid': formErrors.task_title }" id="taskTitle" v-model="newTask.task_title" required aria-describedby="taskTitleFeedback">
-                <div id="taskTitleFeedback" class="invalid-feedback">
-                  Please provide a task title.
+                <label for="deadlineTitle" class="form-label">Deadline Title</label>
+                <input type="text" class="form-control" :class="{ 'is-invalid': formErrors.deadline_title }" id="deadlineTitle" v-model="newDeadline.deadline_title" required aria-describedby="deadlineTitleFeedback">
+                <div id="deadlineTitleFeedback" class="invalid-feedback">
+                  Please provide a deadline title.
                 </div>
               </div>
               <div class="mb-3">
-                <label for="taskContent" class="form-label">Content</label>
-                <textarea class="form-control" :class="{ 'is-invalid': formErrors.content }" id="taskContent" rows="3" v-model="newTask.content" required aria-describedby="taskContentFeedback"></textarea>
-                <div id="taskContentFeedback" class="invalid-feedback">
+                <label for="deadlineContent" class="form-label">Content</label>
+                <textarea class="form-control" :class="{ 'is-invalid': formErrors.content }" id="deadlineContent" rows="3" v-model="newDeadline.content" required aria-describedby="deadlineContentFeedback"></textarea>
+                <div id="deadlineContentFeedback" class="invalid-feedback">
                   Please provide a description or content.
                 </div>
               </div>
               <div class="mb-3">
-                <label for="taskDeadline" class="form-label">Deadline</label>
-                <input type="datetime-local" max="2100-01-01T00:00" class="form-control" :class="{ 'is-invalid': formErrors.deadline }" id="taskDeadline"
-                       v-model="newTask.deadline" required aria-describedby="taskDeadlineFeedback">
-                <div id="taskDeadlineFeedback" class="invalid-feedback">
+                <label for="deadlineDate" class="form-label">Deadline</label>
+                <input type="datetime-local" max="2100-01-01T00:00" class="form-control" :class="{ 'is-invalid': formErrors.deadline }" id="deadlineDate"
+                       v-model="newDeadline.deadline" required aria-describedby="deadlineDateFeedback">
+                <div id="deadlineDateFeedback" class="invalid-feedback">
                   Please provide a valid date and time for the deadline.
                 </div>
               </div>
               <div class="mb-3">
-                <label for="taskGroup" class="form-label">Group</label>
-                <select class="form-select" id="taskGroup" v-model="newTask.group_id" style="max-width: 100%;">
+                <label for="deadlineGroup" class="form-label">Group</label>
+                <select class="form-select" id="deadlineGroup" v-model="newDeadline.group_id" style="max-width: 100%;">
                   <option value="" selected>Personal (Individual)</option>
                   <option v-for="group in groups" :key="group.id" :value="group.id"
                           :title="group.course_code + ' - ' + group.course_name + ' (' + group.group_name + ')'">
@@ -199,40 +199,40 @@
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="closeAddTaskModal">Close
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="closeAddDeadlineModal">Close
             </button>
-            <button type="button" class="btn btn-primary" @click="submitTask">Save Task</button>
+            <button type="button" class="btn btn-primary" @click="submitDeadline">Save Deadline</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Task Details Modal (from DashboardViewNew) -->
-    <div v-if="selectedTask" class="modal fade show d-block" tabindex="-1"
+    <!-- Deadline Details Modal -->
+    <div v-if="selectedDeadline" class="modal fade show d-block" tabindex="-1"
          style="background-color: rgba(0,0,0,0.5); z-index: 1055;">
       <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable fade-in-up">
         <div class="modal-content border-0 shadow-lg rounded-4 bg-white bg-opacity-90 blur-backdrop">
           <div class="modal-header border-bottom-0 pb-0 align-items-start">
             <h3 class="modal-title fw-bold text-dark h4 mb-0 text-break pe-3 w-100 d-flex align-items-center"
-                :class="{'text-danger': selectedTask.status === '0' && selectedTask.is_past_due}">
-              <i v-if="selectedTask.status === '1'" class="bi bi-check-circle-fill text-success me-2"></i>
-              <span v-if="selectedTask.status === '0' && selectedTask.is_past_due">[Overdue] </span>
+                :class="{'text-danger': selectedDeadline.status === '0' && selectedDeadline.is_past_due}">
+              <i v-if="selectedDeadline.status === '1'" class="bi bi-check-circle-fill text-success me-2"></i>
+              <span v-if="selectedDeadline.status === '0' && selectedDeadline.is_past_due">[Overdue] </span>
               
               <!-- Title Edit Mode -->
               <div v-if="editingField === 'title'" class="d-flex w-100 align-items-center">
-                <input type="text" class="form-control me-2" v-model="editTitleValue" @keyup.enter="saveTaskEdit('title')" @keyup.esc="cancelTaskEdit" autofocus>
-                <button class="btn btn-sm btn-success me-1 px-2" @click="saveTaskEdit('title')"><i class="bi bi-check-lg"></i></button>
-                <button class="btn btn-sm btn-secondary px-2" @click="cancelTaskEdit"><i class="bi bi-x-lg"></i></button>
+                <input type="text" class="form-control me-2" v-model="editTitleValue" @keyup.enter="saveDeadlineEdit('title')" @keyup.esc="cancelDeadlineEdit" autofocus>
+                <button class="btn btn-sm btn-success me-1 px-2" @click="saveDeadlineEdit('title')"><i class="bi bi-check-lg"></i></button>
+                <button class="btn btn-sm btn-secondary px-2" @click="cancelDeadlineEdit"><i class="bi bi-x-lg"></i></button>
               </div>
               <!-- Title Display Mode -->
               <div v-else class="d-flex align-items-center">
-                <span>{{ selectedTask.task_title }}</span>
-                <button class="btn btn-sm btn-link text-secondary p-0 ms-2" @click="startTaskEdit('title')" title="Edit Title">
+                <span>{{ selectedDeadline.deadline_title }}</span>
+                <button class="btn btn-sm btn-link text-secondary p-0 ms-2" @click="startDeadlineEdit('title')" title="Edit Title">
                   <i class="bi bi-pencil"></i>
                 </button>
               </div>
             </h3>
-            <button type="button" class="btn-close mt-1 flex-shrink-0" @click="closeTaskDetails"
+            <button type="button" class="btn-close mt-1 flex-shrink-0" @click="closeDeadlineDetails"
                     aria-label="Close"></button>
           </div>
           <div class="modal-body py-4">
@@ -241,49 +241,49 @@
               <div class="col-sm-6 text-sm">
                 <span class="text-secondary fw-bold text-uppercase d-block mb-1"
                       style="font-size: 0.75rem;">Deadline</span>
-                <span :class="['fw-bold', getDeadlineColorClass(selectedTask)]">
-                  {{ selectedTask.deadline }}
+                <span :class="['fw-bold', getDeadlineColorClass(selectedDeadline)]">
+                  {{ selectedDeadline.deadline }}
                 </span>
               </div>
               <div class="col-sm-6 text-sm">
                 <span class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem;">Type</span>
-                <span :class="['badge text-white rounded-pill', selectedTask.group ? 'bg-success' : 'bg-primary']">
-                  {{ selectedTask.group ? 'Group Work' : 'Personal' }}
+                <span :class="['badge text-white rounded-pill', selectedDeadline.group ? 'bg-success' : 'bg-primary']">
+                  {{ selectedDeadline.group ? 'Group Work' : 'Personal' }}
                 </span>
               </div>
-              <div class="col-sm-6 text-sm" v-if="selectedTask.group">
+              <div class="col-sm-6 text-sm" v-if="selectedDeadline.group">
                 <span class="text-secondary fw-bold text-uppercase d-block mb-1"
                       style="font-size: 0.75rem;">Course</span>
                 <span class="fw-medium text-dark">{{
-                    selectedTask.group.course_code
-                  }} - {{ selectedTask.group.course_name }}</span>
+                    selectedDeadline.group.course_code
+                  }} - {{ selectedDeadline.group.course_name }}</span>
               </div>
-              <div class="col-sm-6 text-sm" v-if="selectedTask.group">
+              <div class="col-sm-6 text-sm" v-if="selectedDeadline.group">
                 <span class="text-secondary fw-bold text-uppercase d-block mb-1"
                       style="font-size: 0.75rem;">Group</span>
-                <span class="fw-medium text-dark">{{ selectedTask.group.group_name }}</span>
+                <span class="fw-medium text-dark">{{ selectedDeadline.group.group_name }}</span>
               </div>
             </div>
 
             <div class="bg-light bg-opacity-50 rounded-3 p-4 border border-1">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="h6 fw-bold text-dark mb-0">Description</h4>
-                <button v-if="editingField !== 'content'" class="btn btn-sm btn-link text-secondary p-0" @click="startTaskEdit('content')" title="Edit Description">
+                <button v-if="editingField !== 'content'" class="btn btn-sm btn-link text-secondary p-0" @click="startDeadlineEdit('content')" title="Edit Description">
                   <i class="bi bi-pencil"></i>
                 </button>
               </div>
               
               <!-- Content Edit Mode -->
               <div v-if="editingField === 'content'">
-                <textarea class="form-control mb-2" rows="4" v-model="editContentValue" @keyup.esc="cancelTaskEdit" autofocus></textarea>
+                <textarea class="form-control mb-2" rows="4" v-model="editContentValue" @keyup.esc="cancelDeadlineEdit" autofocus></textarea>
                 <div class="d-flex justify-content-end">
-                  <button class="btn btn-sm btn-secondary me-2" @click="cancelTaskEdit">Cancel</button>
-                  <button class="btn btn-sm btn-success" @click="saveTaskEdit('content')">Save</button>
+                  <button class="btn btn-sm btn-secondary me-2" @click="cancelDeadlineEdit">Cancel</button>
+                  <button class="btn btn-sm btn-success" @click="saveDeadlineEdit('content')">Save</button>
                 </div>
               </div>
               <!-- Content Display Mode -->
               <p v-else class="mb-0 text-secondary" style="line-height: 1.6; white-space: pre-wrap;">{{
-                  selectedTask.content
+                  selectedDeadline.content
                 }}</p>
             </div>
 
@@ -291,8 +291,8 @@
               <h4 class="h6 fw-bold text-dark mb-3">Latest 3 Updates / Logs</h4>
 
               <!-- Logs List -->
-              <div v-if="selectedTask.logs && selectedTask.logs.length > 0" class="mb-3">
-                <div v-for="log in selectedTask.logs.slice(0, 3)" :key="log.id"
+              <div v-if="selectedDeadline.logs && selectedDeadline.logs.length > 0" class="mb-3">
+                <div v-for="log in selectedDeadline.logs.slice(0, 3)" :key="log.id"
                      class="card mb-2 border-0 shadow-sm bg-light">
                   <div class="card-body p-3">
                     <p class="mb-1 text-dark fw-bold" style="white-space: pre-wrap; font-size: 1.15rem;">{{
@@ -301,20 +301,20 @@
                     <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ log.create_time }}</small>
                   </div>
                 </div>
-                <div class="text-end mt-2" v-if="selectedTask.logs.length > 3">
+                <div class="text-end mt-2" v-if="selectedDeadline.logs.length > 3">
                   <span class="more-logs-btn" @click="showMoreLogsToast">More</span>
                 </div>
               </div>
               <div v-else class="text-muted text-center mb-3 fst-italic small">No updates yet.</div>
 
               <!-- Add Log Form -->
-              <div class="card border-0 shadow-sm" v-if="selectedTask.status === '0'">
+              <div class="card border-0 shadow-sm" v-if="selectedDeadline.status === '0'">
                 <div class="card-body p-3">
                   <textarea class="form-control mb-2" rows="2" placeholder="Write an update (max 280 chars)..."
                             v-model="newLogContent" maxlength="280"></textarea>
                   <div class="d-flex justify-content-between align-items-center">
                     <small class="text-muted">{{ 280 - (newLogContent ? newLogContent.length : 0) }} chars left</small>
-                    <button class="btn btn-sm btn-primary" @click="submitTaskLog"
+                    <button class="btn btn-sm btn-primary" @click="submitDeadlineLog"
                             :disabled="!newLogContent.trim() || isSubmittingLog">
                       <span v-if="isSubmittingLog" class="spinner-border spinner-border-sm me-1" role="status"
                             aria-hidden="true"></span>
@@ -327,12 +327,12 @@
           </div>
           <div class="modal-footer border-top-0 pt-0 d-flex justify-content-between align-items-center">
             <!-- Completion Switch -->
-            <div v-if="selectedTask" class="d-flex align-items-center">
-              <div v-if="selectedTask.status === '0'" class="form-check form-switch m-0 p-0 d-flex align-items-center">
+            <div v-if="selectedDeadline" class="d-flex align-items-center">
+              <div v-if="selectedDeadline.status === '0'" class="form-check form-switch m-0 p-0 d-flex align-items-center">
                 <input class="form-check-input m-0 me-2 cursor-pointer" type="checkbox" role="switch"
-                       id="completeTaskSwitch"
-                       :checked="false" @change="toggleTaskStatus" style="width: 2.25em; height: 1.15em;">
-                <label class="form-check-label fw-bold cursor-pointer text-primary m-0" for="completeTaskSwitch"
+                       id="completeDeadlineSwitch"
+                       :checked="false" @change="toggleDeadlineStatus" style="width: 2.25em; height: 1.15em;">
+                <label class="form-check-label fw-bold cursor-pointer text-primary m-0" for="completeDeadlineSwitch"
                        style="font-size: 1.1rem; line-height: 1;">Done</label>
               </div>
               <div v-else class="text-success fw-bold d-flex align-items-center" style="font-size: 1rem;">
@@ -341,11 +341,11 @@
             </div>
 
             <div class="d-flex gap-2">
-              <button type="button" class="btn btn-secondary" @click="closeTaskDetails">Close</button>
-              <button type="button" class="btn btn-danger" v-if="!deletingTaskId"
-                      @click="openDeleteModal(selectedTask)">Delete Task
+              <button type="button" class="btn btn-secondary" @click="closeDeadlineDetails">Close</button>
+              <button type="button" class="btn btn-danger" v-if="!deletingDeadlineId"
+                      @click="openDeleteModal(selectedDeadline)">Delete Deadline
               </button>
-              <button type="button" class="btn btn-danger disabled" v-if="deletingTaskId === selectedTask.id">
+              <button type="button" class="btn btn-danger disabled" v-if="deletingDeadlineId === selectedDeadline.id">
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                 Deleting...
               </button>
@@ -356,7 +356,7 @@
     </div>
 
     <!-- Custom Confirm Delete Modal -->
-    <div v-if="taskToDelete" class="modal fade show d-block" tabindex="-1"
+    <div v-if="deadlineToDelete" class="modal fade show d-block" tabindex="-1"
          style="background-color: rgba(0,0,0,0.5); z-index: 1060;" @click.self="closeDeleteModal">
       <div class="modal-dialog modal-dialog-centered modal-sm fade-in-up">
         <div class="modal-content border-0 shadow-lg rounded-4 bg-white text-center p-4">
@@ -365,11 +365,11 @@
           </div>
           <h3 class="h4 fw-bold text-dark mb-2">Confirm Delete</h3>
           <p class="text-secondary mb-4">Are you sure you want to delete <br/>"<strong>{{
-              taskToDelete.task_title
+              deadlineToDelete.deadline_title
             }}</strong>"?</p>
           <div class="d-flex justify-content-center gap-3">
             <button type="button" class="btn btn-light px-4" @click="closeDeleteModal">Cancel</button>
-            <button type="button" class="btn btn-danger px-4" @click="confirmDeleteTaskBtn">Yes, Delete</button>
+            <button type="button" class="btn btn-danger px-4" @click="confirmDeleteDeadlineBtn">Yes, Delete</button>
           </div>
         </div>
       </div>
@@ -381,8 +381,8 @@
 import {ref, computed, onMounted, onUnmounted} from 'vue'
 import api from '@/js/api'
 import * as bootstrap from 'bootstrap'
-import TaskCard from '@/components/TaskCard.vue'
-import { formatTimeAgo, getDeadlineColorClass, formatGroupOption } from '@/utils/taskUtils'
+import DeadlineCard from '@/components/DeadlineCard.vue'
+import { formatTimeAgo, getDeadlineColorClass, formatGroupOption } from '@/utils/deadlineUtils'
 
 const currentTime = ref('')
 let timerInterval = null
@@ -401,18 +401,18 @@ const updateTime = () => {
 
 const student = ref(null)
 
-const tasks_1_day = ref([])
-const tasks_3_day = ref([])
-const tasks_7_day = ref([])
-const tasks = ref([])
-const active_tasks = ref([])
-const completed_tasks = ref([])
+const deadlines_1_day = ref([])
+const deadlines_3_day = ref([])
+const deadlines_7_day = ref([])
+const deadlines = ref([])
+const active_deadlines = ref([])
+const completed_deadlines = ref([])
 const groups = ref([])
 
 const overviewSections = computed(() => [
-  { title: 'Within 1 Day', tasks: tasks_1_day.value, colorClass: 'text-danger', borderClass: 'border-end' },
-  { title: 'Within 3 Days', tasks: tasks_3_day.value, colorClass: 'text-orange', borderClass: 'border-end' },
-  { title: 'Within 7 Days', tasks: tasks_7_day.value, colorClass: 'text-warning', borderClass: '' }
+  { title: 'Within 1 Day', deadlines: deadlines_1_day.value, colorClass: 'text-danger', borderClass: 'border-end' },
+  { title: 'Within 3 Days', deadlines: deadlines_3_day.value, colorClass: 'text-orange', borderClass: 'border-end' },
+  { title: 'Within 7 Days', deadlines: deadlines_7_day.value, colorClass: 'text-warning', borderClass: '' }
 ])
 
 // Toast State
@@ -421,45 +421,45 @@ const toastMessage = ref('Msg')
 const toastClass = ref('text-success')
 
 // Modals State
-const newTask = ref({
-  task_title: '',
+const newDeadline = ref({
+  deadline_title: '',
   content: '',
   deadline: '',
   group_id: ''
 })
 
 const formErrors = ref({
-  task_title: false,
+  deadline_title: false,
   content: false,
   deadline: false
 })
 
 const resetFormErrors = () => {
   formErrors.value = {
-    task_title: false,
+    deadline_title: false,
     content: false,
     deadline: false
   }
 }
-const taskToDelete = ref(null)
-const selectedTask = ref(null)
+const deadlineToDelete = ref(null)
+const selectedDeadline = ref(null)
 
 const newLogContent = ref('')
 const isSubmittingLog = ref(false)
 
-const deletingTaskId = ref(null)
+const deletingDeadlineId = ref(null)
 
-// Edit Task State
+// Edit Deadline State
 const editingField = ref(null) // 'title' or 'content'
 const editTitleValue = ref('')
 const editContentValue = ref('')
 
 // DOM Refs for Bootstrap modals
 const toastEl = ref(null)
-const addTaskModalEl = ref(null)
+const addDeadlineModalEl = ref(null)
 
 let bootstrapToast = null
-let bootstrapAddTaskModal = null
+let bootstrapAddDeadlineModal = null
 
 
 onMounted(() => {
@@ -481,7 +481,7 @@ onUnmounted(() => {
 const initBootstrapComponents = () => {
   // Initialize standard Bootstrap modals/toasts using imported bootstrap module
   if (toastEl.value) bootstrapToast = new bootstrap.Toast(toastEl.value)
-  if (addTaskModalEl.value) bootstrapAddTaskModal = new bootstrap.Modal(addTaskModalEl.value)
+  if (addDeadlineModalEl.value) bootstrapAddDeadlineModal = new bootstrap.Modal(addDeadlineModalEl.value)
 }
 
 const fetchData = async () => {
@@ -491,13 +491,13 @@ const fetchData = async () => {
       const data = response.data.data
       student.value = data.student
       groups.value = data.groups
-      tasks.value = data.tasks
-      active_tasks.value = data.tasks.filter(t => t.status === '0')
-      completed_tasks.value = data.tasks.filter(t => t.status === '1')
+      deadlines.value = data.deadlines
+      active_deadlines.value = data.deadlines.filter(t => t.status === '0')
+      completed_deadlines.value = data.deadlines.filter(t => t.status === '1')
 
-      tasks_1_day.value = active_tasks.value.filter(t => t.hours_until >= 0 && t.hours_until <= 24)
-      tasks_3_day.value = active_tasks.value.filter(t => t.hours_until > 24 && t.hours_until <= 72)
-      tasks_7_day.value = active_tasks.value.filter(t => t.hours_until > 72 && t.hours_until <= 168)
+      deadlines_1_day.value = active_deadlines.value.filter(t => t.hours_until >= 0 && t.hours_until <= 24)
+      deadlines_3_day.value = active_deadlines.value.filter(t => t.hours_until > 24 && t.hours_until <= 72)
+      deadlines_7_day.value = active_deadlines.value.filter(t => t.hours_until > 72 && t.hours_until <= 168)
     } else {
       showToast(response.data.error || 'Failed to load data', false)
     }
@@ -521,28 +521,28 @@ const showToast = (message, isSuccess = true) => {
   }
 }
 
-const openAddTaskModal = () => {
-  if (bootstrapAddTaskModal) bootstrapAddTaskModal.show()
+const openAddDeadlineModal = () => {
+  if (bootstrapAddDeadlineModal) bootstrapAddDeadlineModal.show()
 }
 
-const closeAddTaskModal = () => {
-  if (bootstrapAddTaskModal) bootstrapAddTaskModal.hide()
+const closeAddDeadlineModal = () => {
+  if (bootstrapAddDeadlineModal) bootstrapAddDeadlineModal.hide()
   resetFormErrors()
 }
 
-const submitTask = async () => {
+const submitDeadline = async () => {
   resetFormErrors()
   let hasError = false
 
-  if (!newTask.value.task_title || !newTask.value.task_title.trim()) {
-    formErrors.value.task_title = true
+  if (!newDeadline.value.deadline_title || !newDeadline.value.deadline_title.trim()) {
+    formErrors.value.deadline_title = true
     hasError = true
   }
-  if (!newTask.value.content || !newTask.value.content.trim()) {
+  if (!newDeadline.value.content || !newDeadline.value.content.trim()) {
     formErrors.value.content = true
     hasError = true
   }
-  if (!newTask.value.deadline) {
+  if (!newDeadline.value.deadline) {
     formErrors.value.deadline = true
     hasError = true
   }
@@ -551,66 +551,66 @@ const submitTask = async () => {
     return
   }
 
-  const formattedDeadline = newTask.value.deadline.replace('T', ' ')
+  const formattedDeadline = newDeadline.value.deadline.replace('T', ' ')
 
   try {
-    const response = await api.post('/add_task/', {
-      task_title: newTask.value.task_title,
-      content: newTask.value.content,
+    const response = await api.post('/add_deadline/', {
+      deadline_title: newDeadline.value.deadline_title,
+      content: newDeadline.value.content,
       deadline: formattedDeadline,
-      group_id: newTask.value.group_id
+      group_id: newDeadline.value.group_id
     })
 
     if (response.data.success) {
-      closeAddTaskModal()
-      showToast('Task added successfully! Reloading...', true)
+      closeAddDeadlineModal()
+      showToast('Deadline added successfully! Reloading...', true)
       setTimeout(() => {
         window.location.reload()
       }, 1000)
     } else {
-      showToast(response.data.error || 'Failed to add task.', false)
+      showToast(response.data.error || 'Failed to add deadline.', false)
     }
   } catch (error) {
     console.error('Error:', error)
-    closeAddTaskModal()
+    closeAddDeadlineModal()
     showToast('An unexpected error occurred.', false)
   }
 }
 
-const showTaskDetails = (task) => {
-  selectedTask.value = task
+const showDeadlineDetails = (deadline) => {
+  selectedDeadline.value = deadline
 }
 
-const closeTaskDetails = () => {
-  selectedTask.value = null
+const closeDeadlineDetails = () => {
+  selectedDeadline.value = null
   newLogContent.value = ''
   editingField.value = null
 }
 
-const startTaskEdit = (field) => {
+const startDeadlineEdit = (field) => {
   editingField.value = field
   if (field === 'title') {
-    editTitleValue.value = selectedTask.value.task_title
+    editTitleValue.value = selectedDeadline.value.deadline_title
   } else if (field === 'content') {
-    editContentValue.value = selectedTask.value.content
+    editContentValue.value = selectedDeadline.value.content
   }
 }
 
-const cancelTaskEdit = () => {
+const cancelDeadlineEdit = () => {
   editingField.value = null
 }
 
-const saveTaskEdit = async (field) => {
-  if (!selectedTask.value) return
+const saveDeadlineEdit = async (field) => {
+  if (!selectedDeadline.value) return
 
-  let payload = { task_id: selectedTask.value.id }
+  let payload = { deadline_id: selectedDeadline.value.id }
   
   if (field === 'title') {
     if (!editTitleValue.value.trim()) {
       showToast('Title cannot be empty', false)
       return
     }
-    payload.task_title = editTitleValue.value.trim()
+    payload.deadline_title = editTitleValue.value.trim()
   } else if (field === 'content') {
     if (!editContentValue.value.trim()) {
       showToast('Description cannot be empty', false)
@@ -620,38 +620,36 @@ const saveTaskEdit = async (field) => {
   }
 
   try {
-    const response = await api.post('/edit_task/', payload)
+    const response = await api.post('/edit_deadline/', payload)
     
     if (response.data.success) {
-      // Update local state without full reload
       if (field === 'title') {
-        selectedTask.value.task_title = payload.task_title
+        selectedDeadline.value.deadline_title = payload.deadline_title
       } else if (field === 'content') {
-        selectedTask.value.content = payload.content
+        selectedDeadline.value.content = payload.content
       }
       
-      // Also update in the main lists
       const updateList = (list) => {
-        const index = list.findIndex(t => t.id === selectedTask.value.id)
+        const index = list.findIndex(t => t.id === selectedDeadline.value.id)
         if (index !== -1) {
-          if (field === 'title') list[index].task_title = payload.task_title
+          if (field === 'title') list[index].deadline_title = payload.deadline_title
           if (field === 'content') list[index].content = payload.content
         }
       }
-      updateList(tasks.value)
-      updateList(active_tasks.value)
-      updateList(completed_tasks.value)
-      updateList(tasks_1_day.value)
-      updateList(tasks_3_day.value)
-      updateList(tasks_7_day.value)
+      updateList(deadlines.value)
+      updateList(active_deadlines.value)
+      updateList(completed_deadlines.value)
+      updateList(deadlines_1_day.value)
+      updateList(deadlines_3_day.value)
+      updateList(deadlines_7_day.value)
 
-      showToast('Task updated successfully', true)
+      showToast('Deadline updated successfully', true)
       editingField.value = null
     } else {
-      showToast(response.data.error || 'Failed to update task', false)
+      showToast(response.data.error || 'Failed to update deadline', false)
     }
   } catch (error) {
-    console.error('Error updating task:', error)
+    console.error('Error updating deadline:', error)
     showToast('Failed to connect to the server', false)
   }
 }
@@ -660,13 +658,13 @@ const showMoreLogsToast = () => {
   showToast('Implementation in the future', true)
 }
 
-const submitTaskLog = async () => {
-  if (!newLogContent.value.trim() || !selectedTask.value) return
+const submitDeadlineLog = async () => {
+  if (!newLogContent.value.trim() || !selectedDeadline.value) return
 
   isSubmittingLog.value = true
   try {
-    const response = await api.post('/add_task_log/', {
-      task_id: selectedTask.value.id,
+    const response = await api.post('/add_deadline_log/', {
+      deadline_id: selectedDeadline.value.id,
       content: newLogContent.value.trim()
     })
 
@@ -674,9 +672,9 @@ const submitTaskLog = async () => {
       showToast('Update added successfully.', true)
       newLogContent.value = ''
       await fetchData()
-      const updatedTask = tasks.value.find(t => t.id === selectedTask.value.id)
-      if (updatedTask) {
-        selectedTask.value = updatedTask
+      const updatedDeadline = deadlines.value.find(t => t.id === selectedDeadline.value.id)
+      if (updatedDeadline) {
+        selectedDeadline.value = updatedDeadline
       }
     } else {
       showToast(response.data.error || 'Failed to add update.', false)
@@ -689,23 +687,23 @@ const submitTaskLog = async () => {
   }
 }
 
-const toggleTaskStatus = async () => {
-  if (!selectedTask.value) return
+const toggleDeadlineStatus = async () => {
+  if (!selectedDeadline.value) return
 
   try {
-    const response = await api.post('/update_task_status/', {
-      id: selectedTask.value.id,
-      status: selectedTask.value.status === '0' ? '1' : '0'
+    const response = await api.post('/update_deadline_status/', {
+      id: selectedDeadline.value.id,
+      status: selectedDeadline.value.status === '0' ? '1' : '0'
     })
 
     if (response.data.success) {
-      showToast('Task marked as completed! Reloading...', true)
-      closeTaskDetails()
+      showToast('Deadline marked as completed! Reloading...', true)
+      closeDeadlineDetails()
       setTimeout(() => {
         window.location.reload()
       }, 700)
     } else {
-      showToast(response.data.error || 'Failed to update task status.', false)
+      showToast(response.data.error || 'Failed to update deadline status.', false)
     }
   } catch (error) {
     console.error('Error updating status:', error)
@@ -713,44 +711,44 @@ const toggleTaskStatus = async () => {
   }
 }
 
-const openDeleteModal = (task) => {
-  taskToDelete.value = task
+const openDeleteModal = (deadline) => {
+  deadlineToDelete.value = deadline
 }
 
 const closeDeleteModal = () => {
-  taskToDelete.value = null
+  deadlineToDelete.value = null
 }
 
-const confirmDeleteTaskBtn = async () => {
-  if (!taskToDelete.value) return
-  deletingTaskId.value = taskToDelete.value.id
+const confirmDeleteDeadlineBtn = async () => {
+  if (!deadlineToDelete.value) return
+  deletingDeadlineId.value = deadlineToDelete.value.id
 
   try {
-    const response = await api.post('/delete_task/', {
-      id: taskToDelete.value.id
+    const response = await api.post('/delete_deadline/', {
+      id: deadlineToDelete.value.id
     })
     if (response.data.success) {
-      // Remove task seamlessly from UI
-      tasks.value = tasks.value.filter(t => t.id !== taskToDelete.value.id)
-      tasks_1_day.value = tasks_1_day.value.filter(t => t.id !== taskToDelete.value.id)
-      tasks_3_day.value = tasks_3_day.value.filter(t => t.id !== taskToDelete.value.id)
-      tasks_7_day.value = tasks_7_day.value.filter(t => t.id !== taskToDelete.value.id)
+      // Remove deadline seamlessly from UI
+      deadlines.value = deadlines.value.filter(t => t.id !== deadlineToDelete.value.id)
+      deadlines_1_day.value = deadlines_1_day.value.filter(t => t.id !== deadlineToDelete.value.id)
+      deadlines_3_day.value = deadlines_3_day.value.filter(t => t.id !== deadlineToDelete.value.id)
+      deadlines_7_day.value = deadlines_7_day.value.filter(t => t.id !== deadlineToDelete.value.id)
 
-      if (selectedTask.value && selectedTask.value.id === taskToDelete.value.id) {
-        selectedTask.value = null
+      if (selectedDeadline.value && selectedDeadline.value.id === deadlineToDelete.value.id) {
+        selectedDeadline.value = null
       }
       closeDeleteModal()
-      showToast('Task deleted successfully.', true)
+      showToast('Deadline deleted successfully.', true)
       // Refetch data passively to ensure stats are 100% correct if needed
       fetchData()
     } else {
-      showToast(response.data.error || 'Failed to delete task.', false)
+      showToast(response.data.error || 'Failed to delete deadline.', false)
     }
   } catch (error) {
     console.error('Error:', error)
     showToast('An unexpected error occurred.', false)
   } finally {
-    deletingTaskId.value = null
+    deletingDeadlineId.value = null
     closeDeleteModal()
   }
 }
@@ -792,11 +790,11 @@ const confirmDeleteTaskBtn = async () => {
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
 }
 
-.overview-task-item {
+.overview-deadline-item {
   cursor: pointer;
 }
 
-.overview-task-item:hover {
+.overview-deadline-item:hover {
   text-decoration: underline;
 }
 

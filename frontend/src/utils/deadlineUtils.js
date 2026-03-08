@@ -20,11 +20,11 @@ export const formatTimeAgo = (dateString) => {
     return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
 }
 
-export const getDeadlineColorClass = (task) => {
-    if (task.status === '1') return 'text-success'
-    if (task.is_past_due || task.hours_until <= 24) return 'text-danger'
-    if (task.hours_until <= 72) return 'text-orange'
-    if (task.hours_until <= 168) return 'text-warning'
+export const getDeadlineColorClass = (deadline) => {
+    if (deadline.status === '1') return 'text-success'
+    if (deadline.is_past_due || deadline.hours_until <= 24) return 'text-danger'
+    if (deadline.hours_until <= 72) return 'text-orange'
+    if (deadline.hours_until <= 168) return 'text-warning'
     return 'text-dark'
 }
 

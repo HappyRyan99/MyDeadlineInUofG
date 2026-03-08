@@ -4,12 +4,14 @@ from datetime import datetime
 from django.http import JsonResponse
 
 from deadlinemain.models import CourseInfo
-from deadlinemain.models import Student, DeadlineTask, GroupInfo
+from deadlinemain.models import Student, DeadlineItem, GroupInfo
 from deadlinemain.utils.log_utils import LogUtils
 
 day_second = 86400
 time_format_HM = '%Y-%m-%d %H:%M'
 time_format_HMS = '%Y-%m-%d %H:%M:%S'
+
+
 def dashboard_data(request):
     LogUtils.d("dashboard_data", f"enter this")
     """
@@ -40,29 +42,29 @@ def dashboard_data(request):
             'course_name': group.course_code.name if group.course_code else ''
         } for group in user_groups]
 
-        # Tasks Info
+        # Deadlines Info
         now_int = int(time.time())
-        tasks = DeadlineTask.objects.filter(student=student).order_by('deadline')
+        deadlines = DeadlineItem.objects.filter(student=student).order_by('deadline')
 
         one_day_limit_str = datetime.fromtimestamp(now_int + day_second).strftime(time_format_HM)
-        three_day_limit_str = datetime.fromtimestamp(now_int + 3 * day_second).strftime(time_format_HM)
-        seven_day_limit_str = datetime.fromtimestamp(now_int + 7 * day_second).strftime(time_format_HM)
+        three_day_limit_str = datetime.fromtimestamp(now_int + 2 * day_second).strftime(time_format_HM)
+        seven_day_limit_str = datetime.fromtimestamp(now_int + 6 * day_second).strftime(time_format_HM)
         now_str = datetime.fromtimestamp(now_int).strftime(time_format_HM)
 
-        tasks_data = []
-        for t in tasks:
+        deadlines_data = []
+        for t in deadlines:
             # Calculate precise hours difference
             delta_seconds = t.deadline - now_int
             hours_until = delta_seconds / 3600.0
             logs_data = [{
                 'id': log.id,
-                'content': log.task_content,
+                'content': log.deadline_content,
                 'create_time': datetime.fromtimestamp(log.create_time).strftime(time_format_HMS)
             } for log in t.logs.all().order_by('-create_time')]
-            
-            tasks_data.append({
+
+            deadlines_data.append({
                 'id': t.id,
-                'task_title': t.task_title,
+                'deadline_title': t.deadline_title,
                 'content': t.content,
                 'deadline': datetime.fromtimestamp(t.deadline).strftime(time_format_HM),
                 'is_past_due': delta_seconds < 0,
@@ -70,7 +72,8 @@ def dashboard_data(request):
                 'days_until': int(delta_seconds / day_second),
                 'status': t.status,
                 'update_time': datetime.fromtimestamp(t.update_time).isoformat() + 'Z' if t.update_time else None,
-                'update_time_display': datetime.fromtimestamp(t.update_time).strftime(time_format_HM) if t.update_time else None,
+                'update_time_display': datetime.fromtimestamp(t.update_time).strftime(
+                    time_format_HM) if t.update_time else None,
                 'logs': logs_data,
                 'group': {
                     'group_name': t.group.group_name,
@@ -81,11 +84,11 @@ def dashboard_data(request):
 
         # Limits and categorized for stats
         stats = {
-            'tasks_1_day': [t['task_title'] for t in tasks_data if
+            'deadlines_1_day': [t['deadline_title'] for t in deadlines_data if
                             t['deadline'] <= one_day_limit_str and t['deadline'] >= now_str],
-            'tasks_3_day': [t['task_title'] for t in tasks_data if
+            'deadlines_3_day': [t['deadline_title'] for t in deadlines_data if
                             t['deadline'] <= three_day_limit_str and t['deadline'] >= now_str],
-            'tasks_7_day': [t['task_title'] for t in tasks_data if
+            'deadlines_7_day': [t['deadline_title'] for t in deadlines_data if
                             t['deadline'] <= seven_day_limit_str and t['deadline'] >= now_str],
         }
 
@@ -94,7 +97,7 @@ def dashboard_data(request):
             'data': {
                 'student': student_data,
                 'groups': groups_data,
-                'tasks': tasks_data,
+                'deadlines': deadlines_data,
                 'stats': stats
             }
         })
