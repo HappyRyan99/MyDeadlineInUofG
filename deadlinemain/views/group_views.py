@@ -1,8 +1,10 @@
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from deadlinemain.models import GroupInfo, CourseInfo, Student, GroupMember
-from django.views.decorators.csrf import csrf_exempt
 import json
+
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
+
+from deadlinemain.models import GroupInfo, CourseInfo, Student, GroupMember
+
 
 def my_groups(request):
     # View to list student's groups
@@ -11,7 +13,6 @@ def my_groups(request):
         return render(request, 'index.html')
     return redirect('login')
 
-@csrf_exempt
 def add_group(request):
     if request.method == 'POST':
         student_id = request.session.get('student_id')
@@ -42,7 +43,6 @@ def add_group(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
 
-@csrf_exempt
 def add_group_member(request):
     if request.method == 'POST':
         student_id = request.session.get('student_id')
@@ -71,7 +71,6 @@ def add_group_member(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
-@csrf_exempt
 def delete_group_member(request):
     if request.method == 'POST':
         student_id = request.session.get('student_id')
@@ -101,7 +100,6 @@ def delete_group_member(request):
     return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
 
 
-@csrf_exempt
 def delete_group(request):
     if request.method == 'POST':
         student_id = request.session.get('student_id')
