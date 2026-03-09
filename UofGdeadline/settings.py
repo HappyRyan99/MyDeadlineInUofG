@@ -118,4 +118,4 @@ STATICFILES_DIRS = [
     STATIC_DIR,
 ]
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
