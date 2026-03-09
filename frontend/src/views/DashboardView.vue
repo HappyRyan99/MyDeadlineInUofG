@@ -72,8 +72,10 @@
               <div class="row text-center">
                 <div v-for="(section, index) in overviewSections" :key="index" :class="['col-4', section.borderClass]">
                   <h5 class="fw-bold mb-3" :class="section.colorClass">{{ section.title }}</h5>
-                  <ul v-if="section.deadlines.length > 0" class="list-unstyled mb-0 text-start" :class="section.colorClass">
-                    <li v-for="deadline in section.deadlines" :key="deadline.id" class="text-truncate ps-3 overview-deadline-item"
+                  <ul v-if="section.deadlines.length > 0" class="list-unstyled mb-0 text-start"
+                      :class="section.colorClass">
+                    <li v-for="deadline in section.deadlines" :key="deadline.id"
+                        class="text-truncate ps-3 overview-deadline-item"
                         @click="showDeadlineDetails(deadline)">
                       <i class="bi bi-dot"></i>{{ deadline.deadline_title }}
                     </li>
@@ -89,7 +91,8 @@
           </h3>
           <div class="row row-cols-1 row-cols-md-3 g-4">
             <div v-for="deadline in active_deadlines" :key="deadline.id" class="col">
-              <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails" @delete-deadline="openDeleteModal" />
+              <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails"
+                            @delete-deadline="openDeleteModal"/>
             </div>
 
             <div class="col" v-if="active_deadlines.length === 0">
@@ -116,7 +119,8 @@
             </h3>
             <div class="row row-cols-1 row-cols-md-3 g-4 opacity-75">
               <div v-for="deadline in completed_deadlines" :key="deadline.id" class="col">
-                <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails" @delete-deadline="openDeleteModal" />
+                <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails"
+                              @delete-deadline="openDeleteModal"/>
               </div>
             </div>
           </template>
@@ -153,7 +157,8 @@
     </div>
 
     <!-- Add Deadline Modal -->
-    <div class="modal fade" id="addDeadlineModal" tabindex="-1" aria-labelledby="addDeadlineModalLabel" aria-hidden="true"
+    <div class="modal fade" id="addDeadlineModal" tabindex="-1" aria-labelledby="addDeadlineModalLabel"
+         aria-hidden="true"
          data-bs-backdrop="static" data-bs-keyboard="false" ref="addDeadlineModalEl">
       <div class="modal-dialog" style="max-width: 550px;">
         <div class="modal-content">
@@ -166,21 +171,26 @@
             <form id="addDeadlineForm" @submit.prevent="submitDeadline" novalidate>
               <div class="mb-3">
                 <label for="deadlineTitle" class="form-label">Deadline Title</label>
-                <input type="text" class="form-control" :class="{ 'is-invalid': formErrors.deadline_title }" id="deadlineTitle" v-model="newDeadline.deadline_title" required aria-describedby="deadlineTitleFeedback">
+                <input type="text" class="form-control" :class="{ 'is-invalid': formErrors.deadline_title }"
+                       id="deadlineTitle" v-model="newDeadline.deadline_title" required
+                       aria-describedby="deadlineTitleFeedback">
                 <div id="deadlineTitleFeedback" class="invalid-feedback">
                   Please provide a deadline title.
                 </div>
               </div>
               <div class="mb-3">
                 <label for="deadlineContent" class="form-label">Content</label>
-                <textarea class="form-control" :class="{ 'is-invalid': formErrors.content }" id="deadlineContent" rows="3" v-model="newDeadline.content" required aria-describedby="deadlineContentFeedback"></textarea>
+                <textarea class="form-control" :class="{ 'is-invalid': formErrors.content }" id="deadlineContent"
+                          rows="3" v-model="newDeadline.content" required
+                          aria-describedby="deadlineContentFeedback"></textarea>
                 <div id="deadlineContentFeedback" class="invalid-feedback">
                   Please provide a description or content.
                 </div>
               </div>
               <div class="mb-3">
                 <label for="deadlineDate" class="form-label">Deadline</label>
-                <input type="datetime-local" max="2100-01-01T00:00" class="form-control" :class="{ 'is-invalid': formErrors.deadline }" id="deadlineDate"
+                <input type="datetime-local" max="2100-01-01T00:00" class="form-control"
+                       :class="{ 'is-invalid': formErrors.deadline }" id="deadlineDate"
                        v-model="newDeadline.deadline" required aria-describedby="deadlineDateFeedback">
                 <div id="deadlineDateFeedback" class="invalid-feedback">
                   Please provide a valid date and time for the deadline.
@@ -217,17 +227,21 @@
                 :class="{'text-danger': selectedDeadline.status === '0' && selectedDeadline.is_past_due}">
               <i v-if="selectedDeadline.status === '1'" class="bi bi-check-circle-fill text-success me-2"></i>
               <span v-if="selectedDeadline.status === '0' && selectedDeadline.is_past_due">[Overdue] </span>
-              
+
               <!-- Title Edit Mode -->
               <div v-if="editingField === 'title'" class="d-flex w-100 align-items-center">
-                <input type="text" class="form-control me-2" v-model="editTitleValue" @keyup.enter="saveDeadlineEdit('title')" @keyup.esc="cancelDeadlineEdit" autofocus>
-                <button class="btn btn-sm btn-success me-1 px-2" @click="saveDeadlineEdit('title')"><i class="bi bi-check-lg"></i></button>
-                <button class="btn btn-sm btn-secondary px-2" @click="cancelDeadlineEdit"><i class="bi bi-x-lg"></i></button>
+                <input type="text" class="form-control me-2" v-model="editTitleValue"
+                       @keyup.enter="saveDeadlineEdit('title')" @keyup.esc="cancelDeadlineEdit" autofocus>
+                <button class="btn btn-sm btn-success me-1 px-2" @click="saveDeadlineEdit('title')"><i
+                    class="bi bi-check-lg"></i></button>
+                <button class="btn btn-sm btn-secondary px-2" @click="cancelDeadlineEdit"><i class="bi bi-x-lg"></i>
+                </button>
               </div>
               <!-- Title Display Mode -->
               <div v-else class="d-flex align-items-center">
                 <span>{{ selectedDeadline.deadline_title }}</span>
-                <button class="btn btn-sm btn-link text-secondary p-0 ms-2" @click="startDeadlineEdit('title')" title="Edit Title">
+                <button v-if="selectedDeadline.can_edit" class="btn btn-sm btn-link text-secondary p-0 ms-2"
+                        @click="startDeadlineEdit('title')" title="Edit Title">
                   <i class="bi bi-pencil"></i>
                 </button>
               </div>
@@ -268,14 +282,17 @@
             <div class="bg-light bg-opacity-50 rounded-3 p-4 border border-1">
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="h6 fw-bold text-dark mb-0">Description</h4>
-                <button v-if="editingField !== 'content'" class="btn btn-sm btn-link text-secondary p-0" @click="startDeadlineEdit('content')" title="Edit Description">
+                <button v-if="selectedDeadline.can_edit && editingField !== 'content'"
+                        class="btn btn-sm btn-link text-secondary p-0" @click="startDeadlineEdit('content')"
+                        title="Edit Description">
                   <i class="bi bi-pencil"></i>
                 </button>
               </div>
-              
+
               <!-- Content Edit Mode -->
               <div v-if="editingField === 'content'">
-                <textarea class="form-control mb-2" rows="4" v-model="editContentValue" @keyup.esc="cancelDeadlineEdit" autofocus></textarea>
+                <textarea class="form-control mb-2" rows="4" v-model="editContentValue" @keyup.esc="cancelDeadlineEdit"
+                          autofocus></textarea>
                 <div class="d-flex justify-content-end">
                   <button class="btn btn-sm btn-secondary me-2" @click="cancelDeadlineEdit">Cancel</button>
                   <button class="btn btn-sm btn-success" @click="saveDeadlineEdit('content')">Save</button>
@@ -327,8 +344,9 @@
           </div>
           <div class="modal-footer border-top-0 pt-0 d-flex justify-content-between align-items-center">
             <!-- Completion Switch -->
-            <div v-if="selectedDeadline" class="d-flex align-items-center">
-              <div v-if="selectedDeadline.status === '0'" class="form-check form-switch m-0 p-0 d-flex align-items-center">
+            <div v-if="selectedDeadline && selectedDeadline.is_creator" class="d-flex align-items-center">
+              <div v-if="selectedDeadline.status === '0'"
+                   class="form-check form-switch m-0 p-0 d-flex align-items-center">
                 <input class="form-check-input m-0 me-2 cursor-pointer" type="checkbox" role="switch"
                        id="completeDeadlineSwitch"
                        :checked="false" @change="toggleDeadlineStatus" style="width: 2.25em; height: 1.15em;">
@@ -339,13 +357,19 @@
                 <i class="bi bi-check2-all me-1"></i>Completed
               </div>
             </div>
+            <div v-else-if="selectedDeadline" class="d-flex align-items-center">
+              <span v-if="selectedDeadline.status === '1'" class="text-success fw-bold"><i
+                  class="bi bi-check2-all me-1"></i>Completed</span>
+              <span v-else class="text-muted fst-italic">In Progress</span>
+            </div>
 
             <div class="d-flex gap-2">
               <button type="button" class="btn btn-secondary" @click="closeDeadlineDetails">Close</button>
-              <button type="button" class="btn btn-danger" v-if="!deletingDeadlineId"
+              <button type="button" class="btn btn-danger" v-if="selectedDeadline.is_creator && !deletingDeadlineId"
                       @click="openDeleteModal(selectedDeadline)">Delete Deadline
               </button>
-              <button type="button" class="btn btn-danger disabled" v-if="deletingDeadlineId === selectedDeadline.id">
+              <button type="button" class="btn btn-danger disabled"
+                      v-if="selectedDeadline.is_creator && deletingDeadlineId === selectedDeadline.id">
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                 Deleting...
               </button>
@@ -382,7 +406,7 @@ import {ref, computed, onMounted, onUnmounted} from 'vue'
 import api from '@/js/api'
 import * as bootstrap from 'bootstrap'
 import DeadlineCard from '@/components/DeadlineCard.vue'
-import { formatTimeAgo, getDeadlineColorClass, formatGroupOption } from '@/utils/deadlineUtils'
+import {getDeadlineColorClass, formatGroupOption} from '@/utils/deadlineUtils'
 
 const currentTime = ref('')
 let timerInterval = null
@@ -410,9 +434,9 @@ const completed_deadlines = ref([])
 const groups = ref([])
 
 const overviewSections = computed(() => [
-  { title: 'Within 1 Day', deadlines: deadlines_1_day.value, colorClass: 'text-danger', borderClass: 'border-end' },
-  { title: 'Within 3 Days', deadlines: deadlines_3_day.value, colorClass: 'text-orange', borderClass: 'border-end' },
-  { title: 'Within 7 Days', deadlines: deadlines_7_day.value, colorClass: 'text-warning', borderClass: '' }
+  {title: 'Within 1 Day', deadlines: deadlines_1_day.value, colorClass: 'text-danger', borderClass: 'border-end'},
+  {title: 'Within 3 Days', deadlines: deadlines_3_day.value, colorClass: 'text-orange', borderClass: 'border-end'},
+  {title: 'Within 7 Days', deadlines: deadlines_7_day.value, colorClass: 'text-warning', borderClass: ''}
 ])
 
 // Toast State
@@ -511,7 +535,6 @@ const fetchData = async () => {
 }
 
 
-
 const showToast = (message, isSuccess = true) => {
   toastTitle.value = isSuccess ? 'Success' : 'Error'
   toastMessage.value = message
@@ -603,8 +626,8 @@ const cancelDeadlineEdit = () => {
 const saveDeadlineEdit = async (field) => {
   if (!selectedDeadline.value) return
 
-  let payload = { deadline_id: selectedDeadline.value.id }
-  
+  let payload = {deadline_id: selectedDeadline.value.id}
+
   if (field === 'title') {
     if (!editTitleValue.value.trim()) {
       showToast('Title cannot be empty', false)
@@ -621,14 +644,14 @@ const saveDeadlineEdit = async (field) => {
 
   try {
     const response = await api.post('/edit_deadline/', payload)
-    
+
     if (response.data.success) {
       if (field === 'title') {
         selectedDeadline.value.deadline_title = payload.deadline_title
       } else if (field === 'content') {
         selectedDeadline.value.content = payload.content
       }
-      
+
       const updateList = (list) => {
         const index = list.findIndex(t => t.id === selectedDeadline.value.id)
         if (index !== -1) {
@@ -796,10 +819,6 @@ const confirmDeleteDeadlineBtn = async () => {
 
 .overview-deadline-item:hover {
   text-decoration: underline;
-}
-
-.text-orange {
-  color: #fd7e14 !important;
 }
 
 .more-logs-btn {

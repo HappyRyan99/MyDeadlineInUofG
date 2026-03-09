@@ -33,8 +33,15 @@ def dashboard_data(request):
             'email': student.email
         }
 
-        # Groups Info (where student created it or associated with it depending on current logic)
-        user_groups = GroupInfo.objects.filter(student__student_id=student.student_id)
+        # Groups Info (where student created it OR is a member)
+        # We query separately and merge them
+        created_groups = GroupInfo.objects.filter(student=student)
+        member_groups_std = GroupInfo.objects.filter(members__student=student)
+        member_groups_id = GroupInfo.objects.filter(members__member_student_id=student.student_id)
+
+        # Merge QuerySets using | (OR operator in QuerySet)
+        user_groups = (created_groups | member_groups_std | member_groups_id).distinct()
+
         groups_data = [{
             'id': group.id,
             'group_name': group.group_name,
@@ -42,9 +49,12 @@ def dashboard_data(request):
             'course_name': group.course_code.name if group.course_code else ''
         } for group in user_groups]
 
-        # Deadlines Info
+        # Deadlines Info (created by student OR attached to user_groups)
         now_int = int(time.time())
-        deadlines = DeadlineItem.objects.filter(student=student).order_by('deadline')
+        personal_deadlines = DeadlineItem.objects.filter(student=student)
+        shared_deadlines = DeadlineItem.objects.filter(group__in=user_groups)
+
+        deadlines = (personal_deadlines | shared_deadlines).distinct().order_by('deadline')
 
         one_day_limit_str = datetime.fromtimestamp(now_int + day_second).strftime(time_format_HM)
         three_day_limit_str = datetime.fromtimestamp(now_int + 2 * day_second).strftime(time_format_HM)
@@ -75,6 +85,8 @@ def dashboard_data(request):
                 'update_time_display': datetime.fromtimestamp(t.update_time).strftime(
                     time_format_HM) if t.update_time else None,
                 'logs': logs_data,
+                'can_edit': True, # both creator and members can edit title/desc
+                'is_creator': t.student == student, # only creator can delete/toggle status
                 'group': {
                     'group_name': t.group.group_name,
                     'course_name': t.group.course_code.name if t.group.course_code else '',
@@ -85,11 +97,11 @@ def dashboard_data(request):
         # Limits and categorized for stats
         stats = {
             'deadlines_1_day': [t['deadline_title'] for t in deadlines_data if
-                            t['deadline'] <= one_day_limit_str and t['deadline'] >= now_str],
+                                t['deadline'] <= one_day_limit_str and t['deadline'] >= now_str],
             'deadlines_3_day': [t['deadline_title'] for t in deadlines_data if
-                            t['deadline'] <= three_day_limit_str and t['deadline'] >= now_str],
+                                t['deadline'] <= three_day_limit_str and t['deadline'] >= now_str],
             'deadlines_7_day': [t['deadline_title'] for t in deadlines_data if
-                            t['deadline'] <= seven_day_limit_str and t['deadline'] >= now_str],
+                                t['deadline'] <= seven_day_limit_str and t['deadline'] >= now_str],
         }
 
         return JsonResponse({
@@ -144,6 +156,7 @@ def course_list_data(request):
     except Exception as e:
         LogUtils.d("course_list_data", f"Error: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 def my_groups_data(request):
     """

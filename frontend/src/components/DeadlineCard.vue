@@ -30,7 +30,7 @@
     </div>
     <div class="card-footer bg-white text-muted small d-flex justify-content-between align-items-center">
       <div><i class="bi bi-clock me-1"></i>Updated: {{ timeAgo }}</div>
-      <button class="btn btn-sm btn-link text-danger p-0" @click.stop="$emit('delete-deadline', deadline)"
+      <button v-if="deadline.is_creator" class="btn btn-sm btn-link text-danger p-0" @click.stop="$emit('delete-deadline', deadline)"
               title="Delete Deadline">
         <i class="bi bi-trash"></i>
       </button>

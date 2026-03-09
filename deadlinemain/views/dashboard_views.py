@@ -221,9 +221,16 @@ def edit_deadline(request):
             
         deadline_item = DeadlineItem.objects.get(id=deadline_id)
         
-        # Check permissions
-        if deadline_item.student.student_id != student_id:
-            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+        # Check permissions: Creator OR Member of the associated group
+        is_creator = deadline_item.student.student_id == student_id
+        is_member = False
+        if deadline_item.group:
+            is_reg_member = deadline_item.group.members.filter(student__student_id=student_id).exists()
+            is_manual_member = deadline_item.group.members.filter(member_student_id=student_id).exists()
+            is_member = is_reg_member or is_manual_member
+            
+        if not (is_creator or is_member):
+            return JsonResponse({'success': False, 'error': 'Permission denied: You are not authorized to edit this deadline'}, status=403)
             
         # Update fields if provided
         if new_title is not None:
