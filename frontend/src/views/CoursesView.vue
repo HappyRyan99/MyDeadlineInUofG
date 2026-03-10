@@ -89,15 +89,7 @@ const handleAddCourse = async () => {
   }
   
   try {
-    const formData = new FormData();
-    formData.append('course_code', newCourse.value.course_code);
-    formData.append('name', newCourse.value.name);
-      
-    const response = await api.post('/add_course/', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data'
-        }
-    });
+    const response = await api.post('/add_course/', newCourse.value)
     
     if (response.data.success) {
       addCourseModalInstance?.hide();
