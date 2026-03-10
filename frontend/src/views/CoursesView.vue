@@ -175,7 +175,7 @@ const handleDeleteCourse = async () => {
     <div class="content-container flex-grow-1 overflow-auto w-100">
       <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
         <h3 class="text-primary mb-0"><i class="bi bi-journal-text me-2"></i>My Course</h3>
-        <button type="button" class="btn btn-success" @click="openAddCourseModal">
+        <button type="button" class="btn btn-primary" @click="openAddCourseModal">
           <i class="bi bi-plus-lg me-1"></i>Add Course
         </button>
       </div>
