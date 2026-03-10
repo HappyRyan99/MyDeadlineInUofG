@@ -1,7 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import {ref, onMounted} from 'vue';
+import {useRouter} from 'vue-router';
 import api from '@/js/api';
+import HeaderView from "@/components/HeaderView.vue";
+import FooterView from "@/components/FooterView.vue";
 
 const router = useRouter();
 
@@ -55,7 +57,7 @@ const handleAddGroup = async () => {
     const response = await api.post('/api/add_group/', newGroup.value);
     if (response.data.success) {
       showAddGroupModal.value = false;
-      newGroup.value = { group_name: '', course_id: '' };
+      newGroup.value = {group_name: '', course_id: ''};
       await fetchData();
     } else {
       alert('Error: ' + response.data.error);
@@ -76,7 +78,7 @@ const handleAddMember = async () => {
     const response = await api.post('/api/add_group_member/', newMember.value);
     if (response.data.success) {
       showAddMemberModal.value = false;
-      newMember.value = { group_id: null, student_id: '', student_name: '' };
+      newMember.value = {group_id: null, student_id: '', student_name: ''};
       await fetchData();
     } else {
       alert('Error: ' + response.data.error);
@@ -87,9 +89,7 @@ const handleAddMember = async () => {
   }
 };
 
-const handleLogout = () => {
-  window.location.href = '/logout/';
-};
+
 const deleteMember = async (member) => {
   if (!confirm(`Are you sure you want to remove ${member.name} from this group?`)) {
     return
@@ -135,36 +135,7 @@ const deleteGroup = async (groupId) => {
 <template>
   <div class="vh-100 d-flex flex-column bg-light overflow-hidden">
     <!-- ===== NAVBAR ===== -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm flex-shrink-0">
-      <div class="container-fluid">
-        <router-link to="/dashboard" class="navbar-brand fw-bold">
-          <i class="bi bi-clock-history me-2"></i>MyDeadlineInUofG
-        </router-link>
-
-        <div class="d-flex align-items-center">
-          <template v-if="student">
-            <span class="me-3 text-muted">
-              Welcome, <strong>{{ student.name }}</strong>
-            </span>
-            <router-link to="/dashboard" class="me-3 text-decoration-none text-dark">
-              <i class="bi bi-speedometer2 me-1"></i>Dashboard
-            </router-link>
-            <router-link to="/courses" class="me-3 text-decoration-none text-dark">
-              <i class="bi bi-book me-1"></i>My Course
-            </router-link>
-            <router-link to="/groups" class="me-3 text-decoration-none text-dark">
-              <i class="bi bi-people me-1"></i>My Group
-            </router-link>
-            <button @click="handleLogout" class="btn btn-outline-danger btn-sm">
-              <i class="bi bi-box-arrow-right me-1"></i>Logout
-            </button>
-          </template>
-          <template v-else>
-            <a href="/login/" class="btn btn-primary btn-sm">Login</a>
-          </template>
-        </div>
-      </div>
-    </nav>
+    <HeaderView :student="student" />
 
     <!-- ===== MAIN CONTENT ===== -->
     <div class="content-container flex-grow-1 overflow-auto">
@@ -190,11 +161,13 @@ const deleteGroup = async (groupId) => {
         <!-- Group Cards -->
         <div class="col" v-for="group in groups" :key="group.id">
           <div class="card h-100 shadow-sm border-0">
-            <div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
+            <div
+                class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
               <h5 class="card-title text-primary fw-bold mb-0">
                 {{ group.group_name }}
               </h5>
-              <button v-if="group.is_creator" @click="openAddMemberModal(group.id)" class="btn btn-outline-primary btn-sm rounded-pill" title="Add Member">
+              <button v-if="group.is_creator" @click="openAddMemberModal(group.id)"
+                      class="btn btn-outline-primary btn-sm rounded-pill" title="Add Member">
                 <i class="bi bi-person-plus"></i>
               </button>
             </div>
@@ -214,13 +187,15 @@ const deleteGroup = async (groupId) => {
                 </small>
 
                 <ul class="list-unstyled mt-2 mb-0 small">
-                  <li v-for="(member, index) in group.members" :key="index" class="text-secondary d-flex justify-content-between align-items-center mb-1">
+                  <li v-for="(member, index) in group.members" :key="index"
+                      class="text-secondary d-flex justify-content-between align-items-center mb-1">
                     <span>
                       <i class="bi bi-person-fill me-2 text-muted"></i>
                       {{ member.name }}
                       <span class="text-muted ms-1" style="font-size: 0.65rem;">({{ member.student_id }})</span>
                     </span>
-                    <button v-if="group.is_creator" @click="deleteMember(member)" class="btn btn-sm btn-link text-danger p-0 ms-2" title="Remove Member">
+                    <button v-if="group.is_creator" @click="deleteMember(member)"
+                            class="btn btn-sm btn-link text-danger p-0 ms-2" title="Remove Member">
                       <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
                     </button>
                   </li>
@@ -235,7 +210,8 @@ const deleteGroup = async (groupId) => {
               <small class="text-muted" style="font-size: 0.75rem;">
                 Created by {{ group.creator_name }}
               </small>
-              <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-sm btn-link text-danger p-0" title="Delete Group">
+              <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-sm btn-link text-danger p-0"
+                      title="Delete Group">
                 <i class="bi bi-trash me-1"></i>
               </button>
             </div>
@@ -275,7 +251,8 @@ const deleteGroup = async (groupId) => {
             <form @submit.prevent="handleAddGroup">
               <div class="mb-3">
                 <label class="form-label fw-bold">Group Name</label>
-                <input v-model="newGroup.group_name" type="text" class="form-control" placeholder="Enter group name" required>
+                <input v-model="newGroup.group_name" type="text" class="form-control" placeholder="Enter group name"
+                       required>
               </div>
               <div class="mb-3">
                 <label class="form-label fw-bold">Associated Course</label>
@@ -307,11 +284,13 @@ const deleteGroup = async (groupId) => {
             <form @submit.prevent="handleAddMember">
               <div class="mb-3">
                 <label class="form-label fw-bold">Student ID</label>
-                <input v-model="newMember.student_id" type="text" class="form-control" placeholder="Max 10 characters" maxlength="10" required>
+                <input v-model="newMember.student_id" type="text" class="form-control" placeholder="Max 10 characters"
+                       maxlength="10" required>
               </div>
               <div class="mb-3">
                 <label class="form-label fw-bold">Student Name</label>
-                <input v-model="newMember.student_name" type="text" class="form-control" placeholder="Max 50 characters" maxlength="50" required>
+                <input v-model="newMember.student_name" type="text" class="form-control" placeholder="Max 50 characters"
+                       maxlength="50" required>
               </div>
               <div class="mt-4 d-grid">
                 <button type="submit" class="btn btn-success">Add Member</button>
@@ -323,11 +302,7 @@ const deleteGroup = async (groupId) => {
     </div>
 
     <!-- ===== FOOTER ===== -->
-    <footer class="bg-dark text-white text-center py-3 mt-auto flex-shrink-0">
-      <div class="container">
-        <p class="mb-0">&copy; 2026 MyDeadlineInUofG. All rights reserved.</p>
-      </div>
-    </footer>
+    <FooterView/>
 
   </div> <!-- End root wrapper -->
 </template>

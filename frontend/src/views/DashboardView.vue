@@ -1,28 +1,7 @@
 <template>
   <div class="vh-100 d-flex flex-column bg-light overflow-hidden">
     <!-- Top Section (Navbar) -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm flex-shrink-0">
-      <div class="container-fluid">
-        <a class="navbar-brand fw-bold" href="#">
-          <i class="bi bi-clock-history me-2"></i>MyDeadlineInUofG
-        </a>
-
-        <div class="d-flex align-items-center">
-          <template v-if="student">
-            <span class="me-3 text-muted">Welcome, <strong>{{ student.name }}</strong></span>
-            <router-link to="/courses" class="me-3 text-decoration-none text-dark"><i class="bi bi-book me-1"></i>My
-              Course
-            </router-link>
-            <router-link to="/groups" class="me-3 text-decoration-none text-dark"><i class="bi bi-people me-1"></i>My
-              Group
-            </router-link>
-            <a href="/logout" class="btn btn-outline-danger btn-sm">
-              <i class="bi bi-box-arrow-right me-1"></i>Logout
-            </a>
-          </template>
-        </div>
-      </div>
-    </nav>
+    <HeaderView :student="student" />
 
     <!-- Middle Section -->
     <div class="flex-grow-1 p-4 overflow-y-auto">
@@ -137,11 +116,7 @@
     </div>
 
     <!-- Bottom Section -->
-    <footer class="bg-dark text-white text-center py-3 mt-auto flex-shrink-0">
-      <div class="container">
-        <small>2026 MyDeadlineInUofG</small>
-      </div>
-    </footer>
+    <FooterView/>
 
     <!-- Toast Container -->
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11">
@@ -407,6 +382,8 @@ import api from '@/js/api'
 import * as bootstrap from 'bootstrap'
 import DeadlineCard from '@/components/DeadlineCard.vue'
 import {getDeadlineColorClass, formatGroupOption} from '@/utils/deadlineUtils'
+import HeaderView from "@/components/HeaderView.vue";
+import FooterView from "@/components/FooterView.vue";
 
 const currentTime = ref('')
 let timerInterval = null

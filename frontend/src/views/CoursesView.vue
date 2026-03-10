@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/js/api';
 import * as bootstrap from 'bootstrap';
+import HeaderView from "@/components/HeaderView.vue";
+import FooterView from "@/components/FooterView.vue";
 
 const router = useRouter();
 
@@ -72,9 +74,7 @@ const fetchData = async () => {
   }
 };
 
-const handleLogout = () => {
-  window.location.href = '/logout/';
-};
+
 
 const openAddCourseModal = () => {
   newCourse.value = { course_code: '', name: '' };
@@ -174,31 +174,7 @@ const handleDeleteCourse = async () => {
 <template>
   <div class="vh-100 d-flex flex-column bg-light overflow-hidden">
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm flex-shrink-0">
-      <div class="container-fluid">
-        <router-link to="/dashboard" class="navbar-brand fw-bold">
-          <i class="bi bi-clock-history me-2"></i>MyDeadlineInUofG
-        </router-link>
-
-        <div class="d-flex align-items-center">
-          <template v-if="student">
-            <span class="me-3 text-muted">Welcome, <strong>{{ student.name }}</strong></span>
-            <router-link to="/dashboard" class="me-3 text-decoration-none text-dark">
-                <i class="bi bi-speedometer2 me-1"></i>Dashboard
-            </router-link>
-            <router-link to="/courses" class="me-3 text-decoration-none text-dark">
-                <i class="bi bi-book me-1"></i>My Course
-            </router-link>
-            <router-link to="/groups" class="me-3 text-decoration-none text-dark">
-                <i class="bi bi-people me-1"></i>My Group
-            </router-link>
-            <button @click="handleLogout" class="btn btn-outline-danger btn-sm">
-              <i class="bi bi-box-arrow-right me-1"></i>Logout
-            </button>
-          </template>
-        </div>
-      </div>
-    </nav>
+    <HeaderView :student="student" />
 
     <!-- Main Content -->
     <div class="content-container flex-grow-1 overflow-auto">
@@ -257,11 +233,7 @@ const handleDeleteCourse = async () => {
     </div> <!-- End Main Content -->
 
     <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-3 mt-auto flex-shrink-0">
-      <div class="container">
-        <p class="mb-0">&copy; 2026 MyDeadlineInUofG. All rights reserved.</p>
-      </div>
-    </footer>
+    <FooterView/>
 
     <!-- Add Course Modal -->
     <div class="modal fade" id="addCourseModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
