@@ -2,6 +2,7 @@
 import {ref, onMounted} from 'vue';
 import {useRouter} from 'vue-router';
 import api from '@/js/api';
+import * as bootstrap from 'bootstrap';
 
 const router = useRouter();
 const emit = defineEmits(['update-student']);
@@ -28,7 +29,16 @@ const showAddGroupModal = ref(false);
 const showAddMemberModal = ref(false);
 
 // Lifecycle Hooks
+let addGroupModalInstance = null;
+let addMemberModalInstance = null;
+
 onMounted(() => {
+  if (document.getElementById('addGroupModal')) {
+    addGroupModalInstance = new bootstrap.Modal(document.getElementById('addGroupModal'));
+  }
+  if (document.getElementById('addMemberModal')) {
+    addMemberModalInstance = new bootstrap.Modal(document.getElementById('addMemberModal'));
+  }
   fetchData();
 });
 
@@ -56,7 +66,7 @@ const handleAddGroup = async () => {
   try {
     const response = await api.post('/api/add_group/', newGroup.value);
     if (response.data.success) {
-      showAddGroupModal.value = false;
+      addGroupModalInstance?.hide();
       newGroup.value = {group_name: '', course_id: ''};
       await fetchData();
     } else {
@@ -70,14 +80,14 @@ const handleAddGroup = async () => {
 
 const openAddMemberModal = (groupId) => {
   newMember.value.group_id = groupId;
-  showAddMemberModal.value = true;
+  addMemberModalInstance?.show();
 };
 
 const handleAddMember = async () => {
   try {
     const response = await api.post('/api/add_group_member/', newMember.value);
     if (response.data.success) {
-      showAddMemberModal.value = false;
+      addMemberModalInstance?.hide();
       newMember.value = {group_id: null, student_id: '', student_name: ''};
       await fetchData();
     } else {
@@ -139,7 +149,7 @@ const deleteGroup = async (groupId) => {
       <!-- Page Title & Actions -->
       <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
         <h3 class="text-primary mb-0"><i class="bi bi-people-fill me-2"></i>My Group</h3>
-        <button @click="showAddGroupModal = true" class="btn btn-primary">
+        <button @click="addGroupModalInstance?.show()" class="btn btn-primary">
           <i class="bi bi-plus-lg me-1"></i>Create New Group
         </button>
       </div>
@@ -236,62 +246,64 @@ const deleteGroup = async (groupId) => {
     <!-- ===== MODALS ===== -->
 
     <!-- Add Group Modal -->
-    <div v-if="showAddGroupModal" class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-          <div class="modal-header bg-primary text-white border-0">
-            <h5 class="modal-title"><i class="bi bi-people-fill me-2"></i>Create New Group</h5>
-            <button type="button" class="btn-close btn-close-white" @click="showAddGroupModal = false"></button>
+    <div class="modal fade" id="addGroupModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create New Group</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body p-4">
+          <div class="modal-body">
             <form @submit.prevent="handleAddGroup">
               <div class="mb-3">
-                <label class="form-label fw-bold">Group Name</label>
-                <input v-model="newGroup.group_name" type="text" class="form-control" placeholder="Enter group name"
+                <label for="groupName" class="form-label">Group Name</label>
+                <input type="text" v-model="newGroup.group_name" class="form-control" id="groupName" placeholder="Enter group name"
                        required>
               </div>
               <div class="mb-3">
-                <label class="form-label fw-bold">Associated Course</label>
-                <select v-model="newGroup.course_id" class="form-select">
+                <label for="courseId" class="form-label">Associated Course</label>
+                <select v-model="newGroup.course_id" class="form-select" id="courseId">
                   <option value="">None</option>
                   <option v-for="course in courses" :key="course.id" :value="course.id">
                     {{ course.course_code }} - {{ course.name }}
                   </option>
                 </select>
               </div>
-              <div class="mt-4 d-grid">
-                <button type="submit" class="btn btn-primary">Create Group</button>
-              </div>
             </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" @click="handleAddGroup">Create Group</button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Add Member Modal -->
-    <div v-if="showAddMemberModal" class="modal fade show d-block" style="background: rgba(0,0,0,0.5)">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-          <div class="modal-header bg-success text-white border-0">
-            <h5 class="modal-title"><i class="bi bi-person-plus-fill me-2"></i>Add Group Member</h5>
-            <button type="button" class="btn-close btn-close-white" @click="showAddMemberModal = false"></button>
+    <div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add Group Member</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body p-4">
+          <div class="modal-body">
             <form @submit.prevent="handleAddMember">
               <div class="mb-3">
-                <label class="form-label fw-bold">Student ID</label>
-                <input v-model="newMember.student_id" type="text" class="form-control" placeholder="Max 10 characters"
+                <label for="studentId" class="form-label">Student ID</label>
+                <input type="text" v-model="newMember.student_id" class="form-control" id="studentId" placeholder="Max 10 characters"
                        maxlength="10" required>
               </div>
               <div class="mb-3">
-                <label class="form-label fw-bold">Student Name</label>
-                <input v-model="newMember.student_name" type="text" class="form-control" placeholder="Max 50 characters"
+                <label for="studentName" class="form-label">Student Name</label>
+                <input type="text" v-model="newMember.student_name" class="form-control" id="studentName" placeholder="Max 50 characters"
                        maxlength="50" required>
               </div>
-              <div class="mt-4 d-grid">
-                <button type="submit" class="btn btn-success">Add Member</button>
-              </div>
             </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" @click="handleAddMember">Add Member</button>
           </div>
         </div>
       </div>
