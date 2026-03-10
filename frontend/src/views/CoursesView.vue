@@ -3,10 +3,9 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/js/api';
 import * as bootstrap from 'bootstrap';
-import HeaderView from "@/components/HeaderView.vue";
-import FooterView from "@/components/FooterView.vue";
 
 const router = useRouter();
+const emit = defineEmits(['update-student']);
 
 // State
 const student = ref(null);
@@ -172,12 +171,8 @@ const handleDeleteCourse = async () => {
 </script>
 
 <template>
-  <div class="vh-100 d-flex flex-column bg-light overflow-hidden">
-    <!-- Navbar -->
-    <HeaderView :student="student" />
-
     <!-- Main Content -->
-    <div class="content-container flex-grow-1 overflow-auto">
+    <div class="content-container flex-grow-1 overflow-auto w-100">
       <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
         <h3 class="text-primary mb-0"><i class="bi bi-journal-text me-2"></i>My Course</h3>
         <button type="button" class="btn btn-success" @click="openAddCourseModal">
@@ -231,11 +226,6 @@ const handleDeleteCourse = async () => {
         </router-link>
       </div>
     </div> <!-- End Main Content -->
-
-    <!-- Footer -->
-    <FooterView/>
-
-    <!-- Add Course Modal -->
     <div class="modal fade" id="addCourseModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -325,8 +315,6 @@ const handleDeleteCourse = async () => {
         </div>
       </div>
     </div>
-
-  </div> <!-- End root wrapper -->
 </template>
 
 <style scoped>

@@ -1,10 +1,6 @@
 <template>
-  <div class="vh-100 d-flex flex-column bg-light overflow-hidden">
-    <!-- Top Section (Navbar) -->
-    <HeaderView :student="student" />
-
     <!-- Middle Section -->
-    <div class="flex-grow-1 p-4 overflow-y-auto">
+    <div class="flex-grow-1 p-4 overflow-y-auto w-100">
       <div class="container" style="max-width: 1080px;">
         <template v-if="student">
           <!-- Student Info Card -->
@@ -114,9 +110,6 @@
         </template>
       </div>
     </div>
-
-    <!-- Bottom Section -->
-    <FooterView/>
 
     <!-- Toast Container -->
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 11">
@@ -373,7 +366,6 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -382,10 +374,9 @@ import api from '@/js/api'
 import * as bootstrap from 'bootstrap'
 import DeadlineCard from '@/components/DeadlineCard.vue'
 import {getDeadlineColorClass, formatGroupOption} from '@/utils/deadlineUtils'
-import HeaderView from "@/components/HeaderView.vue";
-import FooterView from "@/components/FooterView.vue";
 
 const currentTime = ref('')
+const emit = defineEmits(['update-student'])
 let timerInterval = null
 
 const updateTime = () => {
@@ -491,6 +482,7 @@ const fetchData = async () => {
     if (response.data.success) {
       const data = response.data.data
       student.value = data.student
+      emit('update-student', student.value)
       groups.value = data.groups
       deadlines.value = data.deadlines
       active_deadlines.value = data.deadlines.filter(t => t.status === '0')

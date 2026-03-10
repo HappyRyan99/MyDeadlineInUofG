@@ -2,10 +2,9 @@
 import {ref, onMounted} from 'vue';
 import {useRouter} from 'vue-router';
 import api from '@/js/api';
-import HeaderView from "@/components/HeaderView.vue";
-import FooterView from "@/components/FooterView.vue";
 
 const router = useRouter();
+const emit = defineEmits(['update-student']);
 
 // State
 const student = ref(null);
@@ -39,6 +38,7 @@ const fetchData = async () => {
     const response = await api.get('/api/groups_data/');
     if (response.data.success) {
       student.value = response.data.data.student;
+      emit('update-student', student.value);
       groups.value = response.data.data.groups;
       courses.value = response.data.data.courses;
     }
@@ -133,12 +133,8 @@ const deleteGroup = async (groupId) => {
 </script>
 
 <template>
-  <div class="vh-100 d-flex flex-column bg-light overflow-hidden">
-    <!-- ===== NAVBAR ===== -->
-    <HeaderView :student="student" />
-
     <!-- ===== MAIN CONTENT ===== -->
-    <div class="content-container flex-grow-1 overflow-auto">
+    <div class="content-container flex-grow-1 overflow-auto w-100">
 
       <!-- Page Title & Actions -->
       <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
@@ -300,11 +296,6 @@ const deleteGroup = async (groupId) => {
         </div>
       </div>
     </div>
-
-    <!-- ===== FOOTER ===== -->
-    <FooterView/>
-
-  </div> <!-- End root wrapper -->
 </template>
 
 <style scoped>
