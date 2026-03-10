@@ -1,10 +1,8 @@
 <script setup>
 import {ref, onMounted} from 'vue';
-import {useRouter} from 'vue-router';
 import api from '@/js/api';
 import * as bootstrap from 'bootstrap';
 
-const router = useRouter();
 const emit = defineEmits(['update-student']);
 
 // State
@@ -143,171 +141,174 @@ const deleteGroup = async (groupId) => {
 </script>
 
 <template>
-    <!-- ===== MAIN CONTENT ===== -->
-    <div class="content-container flex-grow-1 overflow-auto w-100">
+  <!-- ===== MAIN CONTENT ===== -->
+  <div class="content-container flex-grow-1 overflow-auto w-100">
 
-      <!-- Page Title & Actions -->
-      <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-        <h3 class="text-primary mb-0"><i class="bi bi-people-fill me-2"></i>My Group</h3>
-        <button @click="addGroupModalInstance?.show()" class="btn btn-primary">
-          <i class="bi bi-plus-lg me-1"></i>Create New Group
-        </button>
+    <!-- Page Title & Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+      <h3 class="text-primary mb-0"><i class="bi bi-people-fill me-2"></i>My Group</h3>
+      <button @click="addGroupModalInstance?.show()" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Create New Group
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
+    </div>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
+    <!-- Groups Grid -->
+    <div v-else class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
-      <!-- Groups Grid -->
-      <div v-else class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <!-- Group Cards -->
+      <div class="col" v-for="group in groups" :key="group.id">
+        <div class="card h-100 shadow-sm border-0">
+          <div
+              class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
+            <h5 class="card-title text-primary fw-bold mb-0">
+              {{ group.group_name }}
+            </h5>
+            <button v-if="group.is_creator" @click="openAddMemberModal(group.id)"
+                    class="btn btn-outline-primary btn-sm rounded-pill" title="Add Member">
+              <i class="bi bi-person-plus"></i>
+            </button>
+          </div>
 
-        <!-- Group Cards -->
-        <div class="col" v-for="group in groups" :key="group.id">
-          <div class="card h-100 shadow-sm border-0">
-            <div
-                class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
-              <h5 class="card-title text-primary fw-bold mb-0">
-                {{ group.group_name }}
-              </h5>
-              <button v-if="group.is_creator" @click="openAddMemberModal(group.id)"
-                      class="btn btn-outline-primary btn-sm rounded-pill" title="Add Member">
-                <i class="bi bi-person-plus"></i>
-              </button>
-            </div>
+          <div class="card-body">
+            <h6 class="card-subtitle mb-2 text-muted fw-bold">
+              {{ group.course_code }}
+            </h6>
 
-            <div class="card-body">
-              <h6 class="card-subtitle mb-2 text-muted fw-bold">
-                {{ group.course_code }}
-              </h6>
+            <p class="card-text text-secondary mb-3 small">
+              {{ group.course_name }}
+            </p>
 
-              <p class="card-text text-secondary mb-3 small">
-                {{ group.course_name }}
-              </p>
+            <div class="border-top pt-2">
+              <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem;">
+                Members
+              </small>
 
-              <div class="border-top pt-2">
-                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem;">
-                  Members
-                </small>
-
-                <ul class="list-unstyled mt-2 mb-0 small">
-                  <li v-for="(member, index) in group.members" :key="index"
-                      class="text-secondary d-flex justify-content-between align-items-center mb-1">
+              <ul class="list-unstyled mt-2 mb-0 small">
+                <li v-for="(member, index) in group.members" :key="index"
+                    class="text-secondary d-flex justify-content-between align-items-center mb-1">
                     <span>
                       <i class="bi bi-person-fill me-2 text-muted"></i>
                       {{ member.name }}
                       <span class="text-muted ms-1" style="font-size: 0.65rem;">({{ member.student_id }})</span>
                     </span>
-                    <button v-if="group.is_creator" @click="deleteMember(member)"
-                            class="btn btn-sm btn-link text-danger p-0 ms-2" title="Remove Member">
-                      <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
-                    </button>
-                  </li>
-                  <li v-if="group.members.length === 0" class="text-muted fst-italic">
-                    No members assigned
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="card-footer bg-light border-0 d-flex justify-content-between align-items-center py-2">
-              <small class="text-muted" style="font-size: 0.75rem;">
-                Created by {{ group.creator_name }}
-              </small>
-              <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-sm btn-link text-danger p-0"
-                      title="Delete Group">
-                <i class="bi bi-trash me-1"></i>
-              </button>
+                  <button v-if="group.is_creator" @click="deleteMember(member)"
+                          class="btn btn-sm btn-link text-danger p-0 ms-2" title="Remove Member">
+                    <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
+                  </button>
+                </li>
+                <li v-if="group.members.length === 0" class="text-muted fst-italic">
+                  No members assigned
+                </li>
+              </ul>
             </div>
           </div>
-        </div>
 
-        <!-- Empty State -->
-        <div v-if="groups.length === 0" class="col-12 text-center py-5">
-          <div class="text-muted opacity-50">
-            <i class="bi bi-people display-1"></i>
-            <p class="mt-3 fs-5">You are not in any groups.</p>
+          <div class="card-footer bg-light border-0 d-flex justify-content-between align-items-center py-2">
+            <small class="text-muted" style="font-size: 0.75rem;">
+              Created by {{ group.creator_name }}
+            </small>
+            <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-sm btn-link text-danger p-0"
+                    title="Delete Group">
+              <i class="bi bi-trash me-1"></i>
+            </button>
           </div>
         </div>
-
-      </div> <!-- End Groups Grid -->
-
-      <!-- Back Button -->
-      <div class="mt-4 mb-4">
-        <router-link to="/dashboard" class="btn btn-secondary">
-          <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-        </router-link>
       </div>
 
-    </div> <!-- End Main Content -->
+      <!-- Empty State -->
+      <div v-if="groups.length === 0" class="col-12 text-center py-5">
+        <div class="text-muted opacity-50">
+          <i class="bi bi-people display-1"></i>
+          <p class="mt-3 fs-5">You are not in any groups.</p>
+        </div>
+      </div>
 
-    <!-- ===== MODALS ===== -->
+    </div> <!-- End Groups Grid -->
 
-    <!-- Add Group Modal -->
-    <div class="modal fade" id="addGroupModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Create New Group</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="handleAddGroup">
-              <div class="mb-3">
-                <label for="groupName" class="form-label">Group Name</label>
-                <input type="text" v-model="newGroup.group_name" class="form-control" id="groupName" placeholder="Enter group name"
-                       required>
-              </div>
-              <div class="mb-3">
-                <label for="courseId" class="form-label">Associated Course</label>
-                <select v-model="newGroup.course_id" class="form-select" id="courseId">
-                  <option value="">None</option>
-                  <option v-for="course in courses" :key="course.id" :value="course.id">
-                    {{ course.course_code }} - {{ course.name }}
-                  </option>
-                </select>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" @click="handleAddGroup">Create Group</button>
-          </div>
+    <!-- Back Button -->
+    <div class="mt-4 mb-4">
+      <router-link to="/dashboard" class="btn btn-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+      </router-link>
+    </div>
+
+  </div> <!-- End Main Content -->
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Add Group Modal -->
+  <div class="modal fade" id="addGroupModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Create New Group</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="handleAddGroup">
+            <div class="mb-3">
+              <label for="groupName" class="form-label">Group Name</label>
+              <input type="text" v-model="newGroup.group_name" class="form-control" id="groupName"
+                     placeholder="Enter group name"
+                     required>
+            </div>
+            <div class="mb-3">
+              <label for="courseId" class="form-label">Associated Course</label>
+              <select v-model="newGroup.course_id" class="form-select" id="courseId">
+                <option value="">None</option>
+                <option v-for="course in courses" :key="course.id" :value="course.id">
+                  {{ course.course_code }} - {{ course.name }}
+                </option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" @click="handleAddGroup">Create Group</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Add Member Modal -->
-    <div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Add Group Member</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="handleAddMember">
-              <div class="mb-3">
-                <label for="studentId" class="form-label">Student ID</label>
-                <input type="text" v-model="newMember.student_id" class="form-control" id="studentId" placeholder="Max 10 characters"
-                       maxlength="10" required>
-              </div>
-              <div class="mb-3">
-                <label for="studentName" class="form-label">Student Name</label>
-                <input type="text" v-model="newMember.student_name" class="form-control" id="studentName" placeholder="Max 50 characters"
-                       maxlength="50" required>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" @click="handleAddMember">Add Member</button>
-          </div>
+  <!-- Add Member Modal -->
+  <div class="modal fade" id="addMemberModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Group Member</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="handleAddMember">
+            <div class="mb-3">
+              <label for="studentId" class="form-label">Student ID</label>
+              <input type="text" v-model="newMember.student_id" class="form-control" id="studentId"
+                     placeholder="Max 10 characters"
+                     maxlength="10" required>
+            </div>
+            <div class="mb-3">
+              <label for="studentName" class="form-label">Student Name</label>
+              <input type="text" v-model="newMember.student_name" class="form-control" id="studentName"
+                     placeholder="Max 50 characters"
+                     maxlength="50" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" @click="handleAddMember">Add Member</button>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <style scoped>

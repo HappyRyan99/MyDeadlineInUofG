@@ -1,10 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import api from '@/js/api';
 import * as bootstrap from 'bootstrap';
 
-const router = useRouter();
 const emit = defineEmits(['update-student']);
 
 // State
@@ -57,6 +55,7 @@ const fetchData = async () => {
     const response = await api.get('/api/courses_data/');
     if (response.data.success) {
         student.value = response.data.data.student;
+        emit('update-student', student.value);
         courses.value = response.data.data.courses;
     } else {
         showToast(response.data.error || 'Failed to load course data.', false);
