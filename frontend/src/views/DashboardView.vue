@@ -146,15 +146,6 @@
               </div>
             </div>
             <div class="mb-3">
-              <label for="deadlineContent" class="form-label">Content</label>
-              <textarea class="form-control" :class="{ 'is-invalid': formErrors.content }" id="deadlineContent"
-                        rows="3" v-model="newDeadline.content" required
-                        aria-describedby="deadlineContentFeedback"></textarea>
-              <div id="deadlineContentFeedback" class="invalid-feedback">
-                Please provide a description or content.
-              </div>
-            </div>
-            <div class="mb-3">
               <label for="deadlineDate" class="form-label">Deadline</label>
               <input type="datetime-local" max="2100-01-01T00:00" class="form-control"
                      :class="{ 'is-invalid': formErrors.deadline }" id="deadlineDate"
@@ -172,6 +163,15 @@
                   {{ formatGroupOption(group) }}
                 </option>
               </select>
+            </div>
+            <div class="mb-3">
+              <label for="deadlineContent" class="form-label">Content</label>
+              <textarea class="form-control" :class="{ 'is-invalid': formErrors.content }" id="deadlineContent"
+                        rows="3" v-model="newDeadline.content" required
+                        aria-describedby="deadlineContentFeedback"></textarea>
+              <div id="deadlineContentFeedback" class="invalid-feedback">
+                Please provide a description or content.
+              </div>
             </div>
           </form>
         </div>
