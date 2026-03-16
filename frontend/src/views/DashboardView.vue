@@ -6,7 +6,7 @@
         <!-- Student Info Card -->
         <div class="card mb-4 shadow-sm">
           <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>Student Information</h5>
+            <h5 class="mb-0"><BaseIcon name="person-circle" class="me-2" />Student Information</h5>
           </div>
           <div class="card-body">
             <div class="row">
@@ -30,8 +30,8 @@
         <div class="card mb-4 shadow-sm">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="card-title text-primary mb-0"><i class="bi bi-calendar3 me-2"></i>Deadline Overview</h5>
-              <button class="btn btn-sm btn-primary" @click="openAddDeadlineModal"><i class="bi bi-plus-lg me-1"></i>Add
+              <h5 class="card-title text-primary mb-0"><BaseIcon name="calendar3" class="me-2" />Deadline Overview</h5>
+              <button class="btn btn-sm btn-primary" @click="openAddDeadlineModal"><BaseIcon name="plus-lg" class="me-1" />Add
                 Deadline
               </button>
             </div>
@@ -40,7 +40,7 @@
             <div class="d-flex justify-content-center mb-4">
               <div
                   class="h5 fw-bold text-dark px-4 py-2 bg-light border rounded shadow-sm d-flex align-items-center bg-white mb-0">
-                <i class="bi bi-clock-fill text-primary me-2"></i>{{ currentTime }}
+                <BaseIcon name="clock-fill" class="text-primary me-2" />{{ currentTime }}
               </div>
             </div>
 
@@ -52,7 +52,7 @@
                   <li v-for="deadline in section.deadlines" :key="deadline.id"
                       class="text-truncate ps-3 overview-deadline-item"
                       @click="showDeadlineDetails(deadline)">
-                    <i class="bi bi-dot"></i>{{ deadline.deadline_title }}
+                    <BaseIcon name="dot" />{{ deadline.deadline_title }}
                   </li>
                 </ul>
                 <span v-else class="text-muted fst-italic">No deadlines</span>
@@ -62,7 +62,7 @@
         </div>
 
         <h3 class="mb-3 border-bottom pb-2">
-          <i class="bi bi-card-checklist me-2 text-primary"></i>Upcoming Deadlines
+          <BaseIcon name="card-checklist" class="me-2 text-primary" />Upcoming Deadlines
         </h3>
         <div class="row row-cols-1 row-cols-md-3 g-4">
           <div v-for="deadline in active_deadlines" :key="deadline.id" class="col">
@@ -90,7 +90,7 @@
         <!-- Completed Deadlines Section -->
         <template v-if="completed_deadlines.length > 0">
           <h3 class="mb-3 border-bottom pb-2 mt-5 text-success">
-            <i class="bi bi-check2-circle me-2"></i>Completed Deadlines
+            <BaseIcon name="check2-circle" class="me-2" />Completed Deadlines
           </h3>
           <div class="row row-cols-1 row-cols-md-3 g-4 opacity-75">
             <div v-for="deadline in completed_deadlines" :key="deadline.id" class="col">
@@ -192,16 +192,16 @@
         <div class="modal-header border-bottom-0 pb-0 align-items-start">
           <h3 class="modal-title fw-bold text-dark h4 mb-0 text-break pe-3 w-100 d-flex align-items-center"
               :class="{'text-danger': selectedDeadline.status === '0' && selectedDeadline.is_past_due}">
-            <i v-if="selectedDeadline.status === '1'" class="bi bi-check-circle-fill text-success me-2"></i>
+            <BaseIcon v-if="selectedDeadline.status === '1'" name="check-circle-fill" class="text-success me-2" />
             <span v-if="selectedDeadline.status === '0' && selectedDeadline.is_past_due">[Overdue] </span>
 
             <!-- Title Edit Mode -->
             <div v-if="editingField === 'title'" class="d-flex w-100 align-items-center">
               <input type="text" class="form-control me-2" v-model="editTitleValue"
                      @keyup.enter="saveDeadlineEdit('title')" @keyup.esc="cancelDeadlineEdit" autofocus>
-              <button class="btn btn-sm btn-success me-1 px-2" @click="saveDeadlineEdit('title')"><i
-                  class="bi bi-check-lg"></i></button>
-              <button class="btn btn-sm btn-secondary px-2" @click="cancelDeadlineEdit"><i class="bi bi-x-lg"></i>
+              <button class="btn btn-sm btn-success me-1 px-2" @click="saveDeadlineEdit('title')"><BaseIcon
+                  name="check-lg" /></button>
+              <button class="btn btn-sm btn-secondary px-2" @click="cancelDeadlineEdit"><BaseIcon name="x-lg" />
               </button>
             </div>
             <!-- Title Display Mode -->
@@ -209,7 +209,7 @@
               <span>{{ selectedDeadline.deadline_title }}</span>
               <button v-if="selectedDeadline.can_edit" class="btn btn-sm btn-link text-secondary p-0 ms-2"
                       @click="startDeadlineEdit('title')" title="Edit Title">
-                <i class="bi bi-pencil"></i>
+                <BaseIcon name="pencil" />
               </button>
             </div>
           </h3>
@@ -252,7 +252,7 @@
               <button v-if="selectedDeadline.can_edit && editingField !== 'content'"
                       class="btn btn-sm btn-link text-secondary p-0" @click="startDeadlineEdit('content')"
                       title="Edit Description">
-                <i class="bi bi-pencil"></i>
+                <BaseIcon name="pencil" />
               </button>
             </div>
 
@@ -282,7 +282,7 @@
                   <p class="mb-1 text-dark fw-bold" style="white-space: pre-wrap; font-size: 1.15rem;">{{
                       log.content
                     }}</p>
-                  <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ log.create_time }}</small>
+                  <small class="text-muted"><BaseIcon name="clock" class="me-1" />{{ log.create_time }}</small>
                 </div>
               </div>
               <div class="text-end mt-2" v-if="selectedDeadline.logs.length > 3">
@@ -321,12 +321,12 @@
                      style="font-size: 1.1rem; line-height: 1;">Done</label>
             </div>
             <div v-else class="text-success fw-bold d-flex align-items-center" style="font-size: 1rem;">
-              <i class="bi bi-check2-all me-1"></i>Completed
+              <BaseIcon name="check2-all" class="me-1" />Completed
             </div>
           </div>
           <div v-else-if="selectedDeadline" class="d-flex align-items-center">
               <span v-if="selectedDeadline.status === '1'" class="text-success fw-bold"><i
-                  class="bi bi-check2-all me-1"></i>Completed</span>
+                  name="check2-all" class="me-1" />Completed</span>
             <span v-else class="text-muted fst-italic">In Progress</span>
           </div>
 
@@ -352,7 +352,7 @@
     <div class="modal-dialog modal-dialog-centered modal-sm fade-in-up">
       <div class="modal-content border-0 shadow-lg rounded-4 bg-white text-center p-4">
         <div class="text-danger mb-3">
-          <i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+          <BaseIcon name="exclamation-circle" size="48" class="text-danger" />
         </div>
         <h3 class="h4 fw-bold text-dark mb-2">Confirm Delete</h3>
         <p class="text-secondary mb-4">Are you sure you want to delete <br/>"<strong>{{

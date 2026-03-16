@@ -146,9 +146,9 @@ const deleteGroup = async (groupId) => {
 
     <!-- Page Title & Actions -->
     <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-      <h3 class="text-primary mb-0"><i class="bi bi-people-fill me-2"></i>My Group</h3>
+      <h3 class="text-primary mb-0"><BaseIcon name="people-fill" class="me-2" />My Group</h3>
       <button @click="addGroupModalInstance?.show()" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i>Create New Group
+        <BaseIcon name="plus-lg" class="me-1" />Create New Group
       </button>
     </div>
 
@@ -172,7 +172,7 @@ const deleteGroup = async (groupId) => {
             </h5>
             <button v-if="group.is_creator" @click="openAddMemberModal(group.id)"
                     class="btn btn-outline-primary btn-sm rounded-pill" title="Add Member">
-              <i class="bi bi-person-plus"></i>
+              <BaseIcon name="person-plus" />
             </button>
           </div>
 
@@ -194,13 +194,13 @@ const deleteGroup = async (groupId) => {
                 <li v-for="(member, index) in group.members" :key="index"
                     class="text-secondary d-flex justify-content-between align-items-center mb-1">
                     <span>
-                      <i class="bi bi-person-fill me-2 text-muted"></i>
+                      <BaseIcon name="person-fill" class="me-2 text-muted" />
                       {{ member.name }}
                       <span class="text-muted ms-1" style="font-size: 0.65rem;">({{ member.student_id }})</span>
                     </span>
                   <button v-if="group.is_creator" @click="deleteMember(member)"
                           class="btn btn-sm btn-link text-danger p-0 ms-2" title="Remove Member">
-                    <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
+                    <BaseIcon name="x-lg" style="font-size: 0.8rem;" />
                   </button>
                 </li>
                 <li v-if="group.members.length === 0" class="text-muted fst-italic">
@@ -216,7 +216,7 @@ const deleteGroup = async (groupId) => {
             </small>
             <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-sm btn-link text-danger p-0"
                     title="Delete Group">
-              <i class="bi bi-trash me-1"></i>
+              <BaseIcon name="trash" class="me-1" />
             </button>
           </div>
         </div>
@@ -225,7 +225,7 @@ const deleteGroup = async (groupId) => {
       <!-- Empty State -->
       <div v-if="groups.length === 0" class="col-12 text-center py-5">
         <div class="text-muted opacity-50">
-          <i class="bi bi-people display-1"></i>
+          <BaseIcon name="people" size="80" class="opacity-50" />
           <p class="mt-3 fs-5">You are not in any groups.</p>
         </div>
       </div>
@@ -235,7 +235,7 @@ const deleteGroup = async (groupId) => {
     <!-- Back Button -->
     <div class="mt-4 mb-4">
       <router-link to="/dashboard" class="btn btn-secondary">
-        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        <BaseIcon name="arrow-left" class="me-1" />Back to Dashboard
       </router-link>
     </div>
 

@@ -173,9 +173,9 @@ const handleDeleteCourse = async () => {
     <!-- Main Content -->
     <div class="content-container flex-grow-1 overflow-auto w-100">
       <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-        <h3 class="text-primary mb-0"><i class="bi bi-journal-text me-2"></i>My Course</h3>
+        <h3 class="text-primary mb-0"><BaseIcon name="journal-text" class="me-2" />My Course</h3>
         <button type="button" class="btn btn-primary" @click="openAddCourseModal">
-          <i class="bi bi-plus-lg me-1"></i>Add Course
+          <BaseIcon name="plus-lg" class="me-1" />Add Course
         </button>
       </div>
 
@@ -207,10 +207,10 @@ const handleDeleteCourse = async () => {
                 <td class="align-middle">{{ course.name }}</td>
                 <td class="text-end pe-4">
                   <button class="btn btn-outline-primary btn-sm me-1" @click="openEditModal(course)">
-                    <i class="bi bi-pencil"></i>
+                    <BaseIcon name="pencil" />
                   </button>
                   <button class="btn btn-outline-danger btn-sm" @click="confirmDeleteModal(course)">
-                    <i class="bi bi-trash"></i>
+                    <BaseIcon name="trash" />
                   </button>
                 </td>
               </tr>
@@ -221,7 +221,7 @@ const handleDeleteCourse = async () => {
 
       <div class="mt-4 mb-4">
         <router-link to="/dashboard" class="btn btn-secondary">
-          <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+          <BaseIcon name="arrow-left" class="me-1" />Back to Dashboard
         </router-link>
       </div>
     </div> <!-- End Main Content -->
@@ -292,7 +292,7 @@ const handleDeleteCourse = async () => {
           </div>
           <div class="modal-body">
             <p>Are you sure you want to delete <strong v-if="courseToDelete">{{ courseToDelete.course_code }}</strong>?</p>
-            <p class="text-danger small mb-0"><i class="bi bi-exclamation-triangle me-1"></i>This action cannot be undone.</p>
+            <p class="text-danger small mb-0"><BaseIcon name="exclamation-triangle" class="me-1" />This action cannot be undone.</p>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
