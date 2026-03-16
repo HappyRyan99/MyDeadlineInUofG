@@ -171,59 +171,61 @@ const handleDeleteCourse = async () => {
 
 <template>
     <!-- Main Content -->
-    <div class="content-container flex-grow-1 overflow-auto w-100">
-      <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-        <h3 class="text-primary mb-0"><BaseIcon name="journal-text" class="me-2" />My Course</h3>
-        <button type="button" class="btn btn-primary" @click="openAddCourseModal">
-          <BaseIcon name="plus-lg" class="me-1" />Add Course
-        </button>
-      </div>
-
-      <div class="card shadow-sm">
-        <div class="card-body p-0">
-          <table class="table table-hover table-striped mb-0">
-            <thead class="table-light">
-              <tr>
-                <th scope="col" class="ps-4">Course Code</th>
-                <th scope="col">Course Name</th>
-                <th scope="col" class="text-end pe-4">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Loading State -->
-              <tr v-if="loading">
-                  <td colspan="3" class="text-center py-4 text-muted">
-                     <div class="spinner-border spinner-border-sm me-2" role="status"></div>
-                     Loading courses...
-                  </td>
-              </tr>
-              <!-- Empty State -->
-              <tr v-else-if="courses.length === 0">
-                <td colspan="3" class="text-center py-4 text-muted">No courses found.</td>
-              </tr>
-              <!-- Data Rows -->
-              <tr v-for="course in courses" :key="course.id" v-else>
-                <td class="ps-4 fw-bold align-middle">{{ course.course_code }}</td>
-                <td class="align-middle">{{ course.name }}</td>
-                <td class="text-end pe-4">
-                  <button class="btn btn-outline-primary btn-sm me-1" @click="openEditModal(course)">
-                    <BaseIcon name="pencil" />
-                  </button>
-                  <button class="btn btn-outline-danger btn-sm" @click="confirmDeleteModal(course)">
-                    <BaseIcon name="trash" />
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+    <div class="flex-grow-1 w-100 overflow-y-auto">
+      <div class="content-container">
+        <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+          <h3 class="text-primary mb-0"><BaseIcon name="journal-text" class="me-2" />My Course</h3>
+          <button type="button" class="btn btn-primary" @click="openAddCourseModal">
+            <BaseIcon name="plus-lg" class="me-1" />Add Course
+          </button>
         </div>
-      </div>
 
-      <div class="mt-4 mb-4">
-        <router-link to="/dashboard" class="btn btn-secondary">
-          <BaseIcon name="arrow-left" class="me-1" />Back to Dashboard
-        </router-link>
-      </div>
+        <div class="card shadow-sm">
+          <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col" class="ps-4">Course Code</th>
+                  <th scope="col">Course Name</th>
+                  <th scope="col" class="text-end pe-4">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Loading State -->
+                <tr v-if="loading">
+                    <td colspan="3" class="text-center py-4 text-muted">
+                       <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                       Loading courses...
+                    </td>
+                </tr>
+                <!-- Empty State -->
+                <tr v-else-if="courses.length === 0">
+                  <td colspan="3" class="text-center py-4 text-muted">No courses found.</td>
+                </tr>
+                <!-- Data Rows -->
+                <tr v-for="course in courses" :key="course.id" v-else>
+                  <td class="ps-4 fw-bold align-middle">{{ course.course_code }}</td>
+                  <td class="align-middle">{{ course.name }}</td>
+                  <td class="text-end pe-4">
+                    <button class="btn btn-outline-primary btn-sm btn-circle-sm me-1" @click="openEditModal(course)">
+                      <BaseIcon name="pencil" />
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm btn-circle-sm" @click="confirmDeleteModal(course)">
+                      <BaseIcon name="trash" />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-4 mb-4">
+          <router-link to="/dashboard" class="btn btn-secondary">
+            <BaseIcon name="arrow-left" class="me-1" />Back to Dashboard
+          </router-link>
+        </div>
+      </div> <!-- End content-container -->
     </div> <!-- End Main Content -->
     <div class="modal fade" id="addCourseModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
       <div class="modal-dialog">

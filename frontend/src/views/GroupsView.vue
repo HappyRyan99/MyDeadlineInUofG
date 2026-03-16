@@ -142,104 +142,106 @@ const deleteGroup = async (groupId) => {
 
 <template>
   <!-- ===== MAIN CONTENT ===== -->
-  <div class="content-container flex-grow-1 overflow-auto w-100">
+  <div class="flex-grow-1 w-100 overflow-y-auto">
+    <div class="content-container">
 
-    <!-- Page Title & Actions -->
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
-      <h3 class="text-primary mb-0"><BaseIcon name="people-fill" class="me-2" />My Group</h3>
-      <button @click="addGroupModalInstance?.show()" class="btn btn-primary">
-        <BaseIcon name="plus-lg" class="me-1" />Create New Group
-      </button>
-    </div>
-
-    <!-- Loading State -->
-    <div v-if="loading" class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+      <!-- Page Title & Actions -->
+      <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+        <h3 class="text-primary mb-0"><BaseIcon name="people-fill" class="me-2" />My Group</h3>
+        <button @click="addGroupModalInstance?.show()" class="btn btn-primary">
+          <BaseIcon name="plus-lg" class="me-1" />Create New Group
+        </button>
       </div>
-    </div>
 
-    <!-- Groups Grid -->
-    <div v-else class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
 
-      <!-- Group Cards -->
-      <div class="col" v-for="group in groups" :key="group.id">
-        <div class="card h-100 shadow-sm border-0">
-          <div
-              class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
-            <h5 class="card-title text-primary fw-bold mb-0">
-              {{ group.group_name }}
-            </h5>
-            <button v-if="group.is_creator" @click="openAddMemberModal(group.id)"
-                    class="btn btn-outline-primary btn-sm rounded-pill" title="Add Member">
-              <BaseIcon name="person-plus" />
-            </button>
-          </div>
+      <!-- Groups Grid -->
+      <div v-else class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
-          <div class="card-body">
-            <h6 class="card-subtitle mb-2 text-muted fw-bold">
-              {{ group.course_code }}
-            </h6>
+        <!-- Group Cards -->
+        <div class="col" v-for="group in groups" :key="group.id">
+          <div class="card h-100 shadow-sm border-0">
+            <div
+                class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
+              <h5 class="card-title text-primary fw-bold mb-0">
+                {{ group.group_name }}
+              </h5>
+              <button v-if="group.is_creator" @click="openAddMemberModal(group.id)"
+                      class="btn btn-outline-primary btn-sm btn-circle-sm" title="Add Member">
+                <BaseIcon name="person-plus" />
+              </button>
+            </div>
 
-            <p class="card-text text-secondary mb-3 small">
-              {{ group.course_name }}
-            </p>
+            <div class="card-body">
+              <h6 class="card-subtitle mb-2 text-muted fw-bold">
+                {{ group.course_code }}
+              </h6>
 
-            <div class="border-top pt-2">
-              <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem;">
-                Members
+              <p class="card-text text-secondary mb-3 small">
+                {{ group.course_name }}
+              </p>
+
+              <div class="border-top pt-2">
+                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem;">
+                  Members
+                </small>
+
+                <ul class="list-unstyled mt-2 mb-0 small">
+                  <li v-for="(member, index) in group.members" :key="index"
+                      class="text-secondary d-flex justify-content-between align-items-center mb-1">
+                      <span>
+                        <BaseIcon name="person-fill" class="me-2 text-muted" />
+                        {{ member.name }}
+                        <span class="text-muted ms-1" style="font-size: 0.65rem;">({{ member.student_id }})</span>
+                      </span>
+                    <button v-if="group.is_creator" @click="deleteMember(member)"
+                            class="btn btn-sm btn-link text-danger p-0 ms-2" title="Remove Member">
+                      <BaseIcon name="x-lg" style="font-size: 0.8rem;" />
+                    </button>
+                  </li>
+                  <li v-if="group.members.length === 0" class="text-muted fst-italic">
+                    No members assigned
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card-footer bg-light border-0 d-flex justify-content-between align-items-center py-2">
+              <small class="text-muted" style="font-size: 0.75rem;">
+                Created by {{ group.creator_name }}
               </small>
-
-              <ul class="list-unstyled mt-2 mb-0 small">
-                <li v-for="(member, index) in group.members" :key="index"
-                    class="text-secondary d-flex justify-content-between align-items-center mb-1">
-                    <span>
-                      <BaseIcon name="person-fill" class="me-2 text-muted" />
-                      {{ member.name }}
-                      <span class="text-muted ms-1" style="font-size: 0.65rem;">({{ member.student_id }})</span>
-                    </span>
-                  <button v-if="group.is_creator" @click="deleteMember(member)"
-                          class="btn btn-sm btn-link text-danger p-0 ms-2" title="Remove Member">
-                    <BaseIcon name="x-lg" style="font-size: 0.8rem;" />
-                  </button>
-                </li>
-                <li v-if="group.members.length === 0" class="text-muted fst-italic">
-                  No members assigned
-                </li>
-              </ul>
+              <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-sm btn-link text-danger p-0"
+                      title="Delete Group">
+                <BaseIcon name="trash" class="me-1" />
+              </button>
             </div>
           </div>
+        </div>
 
-          <div class="card-footer bg-light border-0 d-flex justify-content-between align-items-center py-2">
-            <small class="text-muted" style="font-size: 0.75rem;">
-              Created by {{ group.creator_name }}
-            </small>
-            <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-sm btn-link text-danger p-0"
-                    title="Delete Group">
-              <BaseIcon name="trash" class="me-1" />
-            </button>
+        <!-- Empty State -->
+        <div v-if="groups.length === 0" class="col-12 text-center py-5">
+          <div class="text-muted opacity-50">
+            <BaseIcon name="people" size="80" class="opacity-50" />
+            <p class="mt-3 fs-5">You are not in any groups.</p>
           </div>
         </div>
+
+      </div> <!-- End Groups Grid -->
+
+      <!-- Back Button -->
+      <div class="mt-4 mb-4">
+        <router-link to="/dashboard" class="btn btn-secondary">
+          <BaseIcon name="arrow-left" class="me-1" />Back to Dashboard
+        </router-link>
       </div>
 
-      <!-- Empty State -->
-      <div v-if="groups.length === 0" class="col-12 text-center py-5">
-        <div class="text-muted opacity-50">
-          <BaseIcon name="people" size="80" class="opacity-50" />
-          <p class="mt-3 fs-5">You are not in any groups.</p>
-        </div>
-      </div>
-
-    </div> <!-- End Groups Grid -->
-
-    <!-- Back Button -->
-    <div class="mt-4 mb-4">
-      <router-link to="/dashboard" class="btn btn-secondary">
-        <BaseIcon name="arrow-left" class="me-1" />Back to Dashboard
-      </router-link>
-    </div>
-
-  </div> <!-- End Main Content -->
+    </div> <!-- End content-container -->
+  </div> <!-- End Outer Scrollable Container -->
 
   <!-- ===== MODALS ===== -->
 

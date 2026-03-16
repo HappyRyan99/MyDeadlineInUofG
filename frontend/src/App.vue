@@ -44,4 +44,32 @@ body {
 button {
   cursor: pointer;
 }
+
+/* Global utility classes */
+.btn-circle-sm {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% !important;
+  line-height: 1;
+}
+
+.btn-circle-xs {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% !important;
+  line-height: 1;
+}
+
+.align-middle-icon {
+  display: inline-flex;
+  align-items: center;
+}
 </style>

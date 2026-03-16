@@ -1,12 +1,12 @@
 <template>
   <!-- Middle Section -->
-  <div class="flex-grow-1 p-4 overflow-y-auto w-100">
-    <div class="container" style="max-width: 1080px;">
+  <div class="flex-grow-1 overflow-y-auto w-100">
+    <div class="container py-4" style="max-width: 1080px;">
       <template v-if="student">
         <!-- Student Info Card -->
         <div class="card mb-4 shadow-sm">
           <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><BaseIcon name="person-circle" class="me-2" />Student Information</h5>
+            <h5 class="mb-0 d-flex align-items-center"><BaseIcon name="person-circle" class="me-2" />Student Information</h5>
           </div>
           <div class="card-body">
             <div class="row">
@@ -30,7 +30,7 @@
         <div class="card mb-4 shadow-sm">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="card-title text-primary mb-0"><BaseIcon name="calendar3" class="me-2" />Deadline Overview</h5>
+              <h5 class="card-title text-primary mb-0 d-flex align-items-center"><BaseIcon name="calendar3" class="me-2" />Deadline Overview</h5>
               <button class="btn btn-sm btn-primary" @click="openAddDeadlineModal"><BaseIcon name="plus-lg" class="me-1" />Add
                 Deadline
               </button>
@@ -61,7 +61,7 @@
           </div>
         </div>
 
-        <h3 class="mb-3 border-bottom pb-2">
+        <h3 class="mb-3 border-bottom pb-2 d-flex align-items-center">
           <BaseIcon name="card-checklist" class="me-2 text-primary" />Upcoming Deadlines
         </h3>
         <div class="row row-cols-1 row-cols-md-3 g-4">
@@ -89,7 +89,7 @@
 
         <!-- Completed Deadlines Section -->
         <template v-if="completed_deadlines.length > 0">
-          <h3 class="mb-3 border-bottom pb-2 mt-5 text-success">
+          <h3 class="mb-3 border-bottom pb-2 mt-5 text-success d-flex align-items-center">
             <BaseIcon name="check2-circle" class="me-2" />Completed Deadlines
           </h3>
           <div class="row row-cols-1 row-cols-md-3 g-4 opacity-75">
