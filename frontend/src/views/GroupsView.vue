@@ -1,152 +1,12 @@
-<script setup>
-import {ref, onMounted} from 'vue';
-import api from '@/js/api';
-import * as bootstrap from 'bootstrap';
-
-const emit = defineEmits(['update-student']);
-
-// State
-const student = ref(null);
-const groups = ref([]);
-const courses = ref([]);
-const loading = ref(true);
-
-// Forms State
-const newGroup = ref({
-  group_name: '',
-  course_id: ''
-});
-
-const newMember = ref({
-  group_id: null,
-  student_id: '',
-  student_name: ''
-});
-
-const showAddGroupModal = ref(false);
-const showAddMemberModal = ref(false);
-
-// Lifecycle Hooks
-let addGroupModalInstance = null;
-let addMemberModalInstance = null;
-
-onMounted(() => {
-  if (document.getElementById('addGroupModal')) {
-    addGroupModalInstance = new bootstrap.Modal(document.getElementById('addGroupModal'));
-  }
-  if (document.getElementById('addMemberModal')) {
-    addMemberModalInstance = new bootstrap.Modal(document.getElementById('addMemberModal'));
-  }
-  fetchData();
-});
-
-// Methods
-const fetchData = async () => {
-  try {
-    const response = await api.get('/api/groups_data/');
-    if (response.data.success) {
-      student.value = response.data.data.student;
-      emit('update-student', student.value);
-      groups.value = response.data.data.groups;
-      courses.value = response.data.data.courses;
-    }
-  } catch (error) {
-    console.error('Failed to load groups data:', error);
-    if (error.response && error.response.status === 401) {
-      window.location.href = '/login/';
-    }
-  } finally {
-    loading.value = false;
-  }
-};
-
-const handleAddGroup = async () => {
-  try {
-    const response = await api.post('/api/add_group/', newGroup.value);
-    if (response.data.success) {
-      addGroupModalInstance?.hide();
-      newGroup.value = {group_name: '', course_id: ''};
-      await fetchData();
-    } else {
-      alert('Error: ' + response.data.error);
-    }
-  } catch (error) {
-    console.error('Failed to add group:', error);
-    alert('Failed to add group');
-  }
-};
-
-const openAddMemberModal = (groupId) => {
-  newMember.value.group_id = groupId;
-  addMemberModalInstance?.show();
-};
-
-const handleAddMember = async () => {
-  try {
-    const response = await api.post('/api/add_group_member/', newMember.value);
-    if (response.data.success) {
-      addMemberModalInstance?.hide();
-      newMember.value = {group_id: null, student_id: '', student_name: ''};
-      await fetchData();
-    } else {
-      alert('Error: ' + response.data.error);
-    }
-  } catch (error) {
-    console.error('Failed to add member:', error);
-    alert('Failed to add member');
-  }
-};
-
-
-const deleteMember = async (member) => {
-  if (!confirm(`Are you sure you want to remove ${member.name} from this group?`)) {
-    return
-  }
-
-  try {
-    const response = await api.post('/api/delete_group_member/', {
-      member_id: member.id
-    })
-
-    if (response.data.success) {
-      await fetchData() // Refresh list
-    } else {
-      alert(response.data.error || 'Failed to remove member.')
-    }
-  } catch (error) {
-    console.error('Error:', error)
-    alert('An unexpected error occurred.')
-  }
-}
-const deleteGroup = async (groupId) => {
-  if (!confirm('Are you sure you want to delete this entire group? All members and associated deadlines will be removed.')) {
-    return
-  }
-
-  try {
-    const response = await api.post('/api/delete_group/', {
-      group_id: groupId
-    })
-
-    if (response.data.success) {
-      await fetchData() // Refresh list
-    } else {
-      alert(response.data.error || 'Failed to delete group.')
-    }
-  } catch (error) {
-    console.error('Error:', error)
-    alert('An unexpected error occurred.')
-  }
-}
-</script>
+<script src="../assets/js/views/GroupsView.js"></script>
 
 <template>
   <!-- ===== MAIN CONTENT ===== -->
   <div class="flex-grow-1 w-100 overflow-y-auto">
-    <div class="content-container">
+    <div class="view-container">
 
       <!-- Page Title & Actions -->
-      <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+      <div class="view-header">
         <h3 class="text-primary mb-0"><BaseIcon name="people-fill" class="me-2" />My Group</h3>
         <button @click="addGroupModalInstance?.show()" class="btn btn-primary">
           <BaseIcon name="plus-lg" class="me-1" />Create New Group
@@ -154,21 +14,20 @@ const deleteGroup = async (groupId) => {
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="text-center py-5">
+      <div v-if="loading" class="loading-state">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>
 
       <!-- Groups Grid -->
-      <div v-else class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <div v-else class="group-grid row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
 
         <!-- Group Cards -->
         <div class="col" v-for="group in groups" :key="group.id">
-          <div class="card h-100 shadow-sm border-0">
-            <div
-                class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
-              <h5 class="card-title text-primary fw-bold mb-0">
+          <div class="group-card card shadow-sm">
+            <div class="group-header card-header bg-white">
+              <h5 class="group-title text-primary fw-bold mb-0">
                 {{ group.group_name }}
               </h5>
               <button v-if="group.is_creator" @click="openAddMemberModal(group.id)"
@@ -177,7 +36,7 @@ const deleteGroup = async (groupId) => {
               </button>
             </div>
 
-            <div class="card-body">
+            <div class="group-body card-body">
               <h6 class="card-subtitle mb-2 text-muted fw-bold">
                 {{ group.course_code }}
               </h6>
@@ -186,36 +45,35 @@ const deleteGroup = async (groupId) => {
                 {{ group.course_name }}
               </p>
 
-              <div class="border-top pt-2">
-                <small class="text-uppercase text-secondary fw-bold" style="font-size: 0.7rem;">
+              <div class="member-section border-top pt-2">
+                <small class="member-label text-uppercase text-secondary fw-bold">
                   Members
                 </small>
 
-                <ul class="list-unstyled mt-2 mb-0 small">
-                  <li v-for="(member, index) in group.members" :key="index"
-                      class="text-secondary d-flex justify-content-between align-items-center mb-1">
-                      <span>
+                <ul class="member-list list-unstyled mt-2 mb-0">
+                  <li v-for="(member, index) in group.members" :key="index" class="member-item text-secondary">
+                      <span class="member-info">
                         <BaseIcon name="person-fill" class="me-2 text-muted" />
                         {{ member.name }}
-                        <span class="text-muted ms-1" style="font-size: 0.65rem;">({{ member.student_id }})</span>
+                        <span class="member-id text-muted">({{ member.student_id }})</span>
                       </span>
                     <button v-if="group.is_creator" @click="deleteMember(member)"
-                            class="btn btn-sm btn-link text-danger p-0 ms-2" title="Remove Member">
-                      <BaseIcon name="x-lg" style="font-size: 0.8rem;" />
+                            class="btn btn-delete-member" title="Remove Member">
+                      <BaseIcon name="x-lg" />
                     </button>
                   </li>
-                  <li v-if="group.members.length === 0" class="text-muted fst-italic">
+                  <li v-if="group.members.length === 0" class="empty-members text-muted fst-italic">
                     No members assigned
                   </li>
                 </ul>
               </div>
             </div>
 
-            <div class="card-footer bg-light border-0 d-flex justify-content-between align-items-center py-2">
-              <small class="text-muted" style="font-size: 0.75rem;">
+            <div class="group-footer card-footer d-flex justify-content-between align-items-center">
+              <small class="creator-info text-muted">
                 Created by {{ group.creator_name }}
               </small>
-              <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-sm btn-link text-danger p-0"
+              <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-delete-group"
                       title="Delete Group">
                 <BaseIcon name="trash" class="me-1" />
               </button>
@@ -224,7 +82,7 @@ const deleteGroup = async (groupId) => {
         </div>
 
         <!-- Empty State -->
-        <div v-if="groups.length === 0" class="col-12 text-center py-5">
+        <div v-if="groups.length === 0" class="col-12 empty-state">
           <div class="text-muted opacity-50">
             <BaseIcon name="people" size="80" class="opacity-50" />
             <p class="mt-3 fs-5">You are not in any groups.</p>
@@ -240,7 +98,7 @@ const deleteGroup = async (groupId) => {
         </router-link>
       </div>
 
-    </div> <!-- End content-container -->
+    </div> <!-- End view-container -->
   </div> <!-- End Outer Scrollable Container -->
 
   <!-- ===== MODALS ===== -->
@@ -313,11 +171,4 @@ const deleteGroup = async (groupId) => {
   </div>
 </template>
 
-<style scoped>
-.content-container {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 0 20px;
-  width: 100%;
-}
-</style>
+<style scoped src="../assets/css/views/GroupsView.css"></style>

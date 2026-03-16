@@ -1,0 +1,125 @@
+/* Design System & Variables */
+:root {
+  /* Colors */
+  --primary-color: #0d6efd; /* Consistent with Bootstrap primary */
+  --secondary-color: #6c757d;
+  --success-color: #198754;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #0dcaf0;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+  
+  --bg-color: #f4f7f9;
+  --card-bg: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #6c757d;
+  
+  /* Layout */
+  --view-max-width: 1080px;
+  --view-padding: 20px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Global Layout Classes */
+.view-container {
+  max-width: var(--view-max-width);
+  margin: 0 auto;
+  padding: 1.5rem var(--view-padding);
+  width: 100%;
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+/* Common UI Elements */
+.loading-state {
+  text-align: center;
+  padding: 3rem 0;
+  color: var(--text-secondary);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 0;
+  color: var(--text-secondary);
+  background-color: var(--card-bg);
+  border-radius: 0.5rem;
+  border: 1px dashed var(--secondary-color);
+}
+
+/* Global utility classes */
+.btn-circle-sm {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% !important;
+  line-height: 1;
+}
+
+.btn-circle-xs {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% !important;
+  line-height: 1;
+}
+
+.align-middle-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Global Modal & Animation Styles */
+.blur-backdrop {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.text-orange {
+  color: #fd7e14;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

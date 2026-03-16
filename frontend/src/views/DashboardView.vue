@@ -1,10 +1,12 @@
+<script src="../assets/js/views/DashboardView.js"></script>
+
 <template>
   <!-- Middle Section -->
   <div class="flex-grow-1 overflow-y-auto w-100">
-    <div class="container py-4" style="max-width: 1080px;">
+    <div class="view-container">
       <template v-if="student">
         <!-- Student Info Card -->
-        <div class="card mb-4 shadow-sm">
+        <div class="student-info-card card mb-4 shadow-sm">
           <div class="card-header bg-primary text-white">
             <h5 class="mb-0 d-flex align-items-center"><BaseIcon name="person-circle" class="me-2" />Student Information</h5>
           </div>
@@ -27,9 +29,9 @@
         </div>
 
         <!-- Deadline Overview Card -->
-        <div class="card mb-4 shadow-sm">
+        <div class="overview-card card mb-4 shadow-sm">
           <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="overview-header d-flex justify-content-between align-items-center mb-3">
               <h5 class="card-title text-primary mb-0 d-flex align-items-center"><BaseIcon name="calendar3" class="me-2" />Deadline Overview</h5>
               <button class="btn btn-sm btn-primary" @click="openAddDeadlineModal"><BaseIcon name="plus-lg" class="me-1" />Add
                 Deadline
@@ -37,9 +39,8 @@
             </div>
 
             <!-- Real-time Clock Display -->
-            <div class="d-flex justify-content-center mb-4">
-              <div
-                  class="h5 fw-bold text-dark px-4 py-2 bg-light border rounded shadow-sm d-flex align-items-center bg-white mb-0">
+            <div class="clock-container d-flex justify-content-center mb-4">
+              <div class="clock-display">
                 <BaseIcon name="clock-fill" class="text-primary me-2" />{{ currentTime }}
               </div>
             </div>
@@ -47,10 +48,10 @@
             <div class="row text-center">
               <div v-for="(section, index) in overviewSections" :key="index" :class="['col-4', section.borderClass]">
                 <h5 class="fw-bold mb-3" :class="section.colorClass">{{ section.title }}</h5>
-                <ul v-if="section.deadlines.length > 0" class="list-unstyled mb-0 text-start"
+                <ul v-if="section.deadlines.length > 0" class="overview-list list-unstyled mb-0 text-start"
                     :class="section.colorClass">
                   <li v-for="deadline in section.deadlines" :key="deadline.id"
-                      class="text-truncate ps-3 overview-deadline-item"
+                      class="text-truncate ps-3 overview-item"
                       @click="showDeadlineDetails(deadline)">
                     <BaseIcon name="dot" />{{ deadline.deadline_title }}
                   </li>
@@ -61,10 +62,10 @@
           </div>
         </div>
 
-        <h3 class="mb-3 border-bottom pb-2 d-flex align-items-center">
+        <h3 class="deadline-section-title mb-3 border-bottom pb-2 d-flex align-items-center">
           <BaseIcon name="card-checklist" class="me-2 text-primary" />Upcoming Deadlines
         </h3>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="deadline-grid row row-cols-1 row-cols-md-3 g-4">
           <div v-for="deadline in active_deadlines" :key="deadline.id" class="col">
             <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails"
                           @delete-deadline="openDeleteModal"/>
@@ -72,15 +73,9 @@
 
           <div class="col" v-if="active_deadlines.length === 0">
             <!-- Add New (Empty State) -->
-            <div
-                class="card p-4 mb-3 border-dashed border-2 bg-white d-flex align-items-center justify-content-center text-muted empty-state-card"
-                style="min-height: 180px; cursor: pointer;" @click="openAddDeadlineModal">
+            <div class="empty-deadline-action" @click="openAddDeadlineModal">
               <div class="text-center">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round" class="mb-2 text-secondary" style="opacity: 0.7;">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
+                <BaseIcon name="plus-lg" size="48" class="mb-2 text-secondary opacity-75" />
                 <div class="fw-medium">Add Deadline</div>
               </div>
             </div>
@@ -89,10 +84,10 @@
 
         <!-- Completed Deadlines Section -->
         <template v-if="completed_deadlines.length > 0">
-          <h3 class="mb-3 border-bottom pb-2 mt-5 text-success d-flex align-items-center">
+          <h3 class="deadline-section-title completed-title mb-3 border-bottom pb-2 mt-5 text-success d-flex align-items-center">
             <BaseIcon name="check2-circle" class="me-2" />Completed Deadlines
           </h3>
-          <div class="row row-cols-1 row-cols-md-3 g-4 opacity-75">
+          <div class="deadline-grid completed-grid row row-cols-1 row-cols-md-3 g-4 opacity-75">
             <div v-for="deadline in completed_deadlines" :key="deadline.id" class="col">
               <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails"
                             @delete-deadline="openDeleteModal"/>
@@ -367,452 +362,4 @@
   </div>
 </template>
 
-<script setup>
-import {ref, computed, onMounted, onUnmounted} from 'vue'
-import api from '@/js/api'
-import * as bootstrap from 'bootstrap'
-import DeadlineCard from '@/components/DeadlineCard.vue'
-import {getDeadlineColorClass, formatGroupOption} from '@/utils/deadlineUtils'
-
-const currentTime = ref('')
-const emit = defineEmits(['update-student'])
-let timerInterval = null
-
-const updateTime = () => {
-  const now = new Date()
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-  const yyyy = now.getFullYear()
-  const MMM = monthNames[now.getMonth()]
-  const dd = String(now.getDate()).padStart(2, '0')
-  const HH = String(now.getHours()).padStart(2, '0')
-  const mm = String(now.getMinutes()).padStart(2, '0')
-  const ss = String(now.getSeconds()).padStart(2, '0')
-  currentTime.value = `${dd} ${MMM} ${yyyy} ${HH}:${mm}:${ss}`
-}
-
-const student = ref(null)
-
-const deadlines_1_day = ref([])
-const deadlines_3_day = ref([])
-const deadlines_7_day = ref([])
-const deadlines = ref([])
-const active_deadlines = ref([])
-const completed_deadlines = ref([])
-const groups = ref([])
-
-const overviewSections = computed(() => [
-  {title: 'Within 1 Day', deadlines: deadlines_1_day.value, colorClass: 'text-danger', borderClass: 'border-end'},
-  {title: 'Within 3 Days', deadlines: deadlines_3_day.value, colorClass: 'text-orange', borderClass: 'border-end'},
-  {title: 'Within 7 Days', deadlines: deadlines_7_day.value, colorClass: 'text-warning', borderClass: ''}
-])
-
-// Toast State
-const toastTitle = ref('Notification')
-const toastMessage = ref('Msg')
-const toastClass = ref('text-success')
-
-// Modals State
-const newDeadline = ref({
-  deadline_title: '',
-  content: '',
-  deadline: '',
-  group_id: ''
-})
-
-const formErrors = ref({
-  deadline_title: false,
-  content: false,
-  deadline: false
-})
-
-const resetFormErrors = () => {
-  formErrors.value = {
-    deadline_title: false,
-    content: false,
-    deadline: false
-  }
-}
-const deadlineToDelete = ref(null)
-const selectedDeadline = ref(null)
-
-const newLogContent = ref('')
-const isSubmittingLog = ref(false)
-
-const deletingDeadlineId = ref(null)
-
-// Edit Deadline State
-const editingField = ref(null) // 'title' or 'content'
-const editTitleValue = ref('')
-const editContentValue = ref('')
-
-// DOM Refs for Bootstrap modals
-const toastEl = ref(null)
-const addDeadlineModalEl = ref(null)
-const deadlineDetailsModalEl = ref(null)
-
-let bootstrapToast = null
-let bootstrapAddDeadlineModal = null
-let bootstrapDeadlineDetailsModal = null
-
-
-onMounted(() => {
-  // Start clock
-  updateTime()
-  timerInterval = setInterval(updateTime, 1000)
-
-  // Initialization, like fetching data or initializing bootstrap modals
-  fetchData()
-  initBootstrapComponents()
-})
-
-onUnmounted(() => {
-  if (timerInterval) {
-    clearInterval(timerInterval)
-  }
-})
-
-const initBootstrapComponents = () => {
-  // Initialize standard Bootstrap modals/toasts using imported bootstrap module
-  if (toastEl.value) bootstrapToast = new bootstrap.Toast(toastEl.value)
-  if (addDeadlineModalEl.value) bootstrapAddDeadlineModal = new bootstrap.Modal(addDeadlineModalEl.value)
-
-  const detailsModalNode = document.getElementById('deadlineDetailsModal');
-  if (detailsModalNode) {
-    bootstrapDeadlineDetailsModal = new bootstrap.Modal(detailsModalNode);
-    // Listen for hidden event to clear selectedDeadline
-    detailsModalNode.addEventListener('hidden.bs.modal', () => {
-      selectedDeadline.value = null;
-      newLogContent.value = '';
-      editingField.value = null;
-    });
-  }
-}
-
-const fetchData = async () => {
-  try {
-    const response = await api.get('/api/dashboard_data/')
-    if (response.data.success) {
-      const data = response.data.data
-      student.value = data.student
-      emit('update-student', student.value)
-      groups.value = data.groups
-      deadlines.value = data.deadlines
-      active_deadlines.value = data.deadlines.filter(t => t.status === '0')
-      completed_deadlines.value = data.deadlines.filter(t => t.status === '1')
-
-      deadlines_1_day.value = active_deadlines.value.filter(t => t.hours_until >= 0 && t.hours_until <= 24)
-      deadlines_3_day.value = active_deadlines.value.filter(t => t.hours_until > 24 && t.hours_until <= 72)
-      deadlines_7_day.value = active_deadlines.value.filter(t => t.hours_until > 72 && t.hours_until <= 168)
-    } else {
-      showToast(response.data.error || 'Failed to load data', false)
-    }
-  } catch (error) {
-    if (error.response && error.response.status === 401) {
-      window.location.href = '/login/'
-    } else {
-      showToast('Error fetching data', false)
-    }
-  }
-}
-
-
-const showToast = (message, isSuccess = true) => {
-  toastTitle.value = isSuccess ? 'Success' : 'Error'
-  toastMessage.value = message
-  toastClass.value = isSuccess ? 'text-success' : 'text-danger'
-  if (bootstrapToast) {
-    bootstrapToast.show()
-  }
-}
-
-const openAddDeadlineModal = () => {
-  if (bootstrapAddDeadlineModal) bootstrapAddDeadlineModal.show()
-}
-
-const closeAddDeadlineModal = () => {
-  if (bootstrapAddDeadlineModal) bootstrapAddDeadlineModal.hide()
-  resetFormErrors()
-}
-
-const submitDeadline = async () => {
-  resetFormErrors()
-  let hasError = false
-
-  if (!newDeadline.value.deadline_title || !newDeadline.value.deadline_title.trim()) {
-    formErrors.value.deadline_title = true
-    hasError = true
-  }
-  if (!newDeadline.value.content || !newDeadline.value.content.trim()) {
-    formErrors.value.content = true
-    hasError = true
-  }
-  if (!newDeadline.value.deadline) {
-    formErrors.value.deadline = true
-    hasError = true
-  }
-
-  if (hasError) {
-    return
-  }
-
-  const formattedDeadline = newDeadline.value.deadline.replace('T', ' ')
-
-  try {
-    const response = await api.post('/add_deadline/', {
-      deadline_title: newDeadline.value.deadline_title,
-      content: newDeadline.value.content,
-      deadline: formattedDeadline,
-      group_id: newDeadline.value.group_id
-    })
-
-    if (response.data.success) {
-      closeAddDeadlineModal()
-      showToast('Deadline added successfully! Reloading...', true)
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
-    } else {
-      showToast(response.data.error || 'Failed to add deadline.', false)
-    }
-  } catch (error) {
-    console.error('Error:', error)
-    closeAddDeadlineModal()
-    showToast('An unexpected error occurred.', false)
-  }
-}
-
-const showDeadlineDetails = (deadline) => {
-  selectedDeadline.value = deadline
-  bootstrapDeadlineDetailsModal?.show();
-}
-
-const closeDeadlineDetails = () => {
-  bootstrapDeadlineDetailsModal?.hide();
-}
-
-const startDeadlineEdit = (field) => {
-  editingField.value = field
-  if (field === 'title') {
-    editTitleValue.value = selectedDeadline.value.deadline_title
-  } else if (field === 'content') {
-    editContentValue.value = selectedDeadline.value.content
-  }
-}
-
-const cancelDeadlineEdit = () => {
-  editingField.value = null
-}
-
-const saveDeadlineEdit = async (field) => {
-  if (!selectedDeadline.value) return
-
-  let payload = {deadline_id: selectedDeadline.value.id}
-
-  if (field === 'title') {
-    if (!editTitleValue.value.trim()) {
-      showToast('Title cannot be empty', false)
-      return
-    }
-    payload.deadline_title = editTitleValue.value.trim()
-  } else if (field === 'content') {
-    if (!editContentValue.value.trim()) {
-      showToast('Description cannot be empty', false)
-      return
-    }
-    payload.content = editContentValue.value.trim()
-  }
-
-  try {
-    const response = await api.post('/edit_deadline/', payload)
-
-    if (response.data.success) {
-      if (field === 'title') {
-        selectedDeadline.value.deadline_title = payload.deadline_title
-      } else if (field === 'content') {
-        selectedDeadline.value.content = payload.content
-      }
-
-      const updateList = (list) => {
-        const index = list.findIndex(t => t.id === selectedDeadline.value.id)
-        if (index !== -1) {
-          if (field === 'title') list[index].deadline_title = payload.deadline_title
-          if (field === 'content') list[index].content = payload.content
-        }
-      }
-      updateList(deadlines.value)
-      updateList(active_deadlines.value)
-      updateList(completed_deadlines.value)
-      updateList(deadlines_1_day.value)
-      updateList(deadlines_3_day.value)
-      updateList(deadlines_7_day.value)
-
-      showToast('Deadline updated successfully', true)
-      editingField.value = null
-    } else {
-      showToast(response.data.error || 'Failed to update deadline', false)
-    }
-  } catch (error) {
-    console.error('Error updating deadline:', error)
-    showToast('Failed to connect to the server', false)
-  }
-}
-
-const showMoreLogsToast = () => {
-  showToast('Implementation in the future', true)
-}
-
-const submitDeadlineLog = async () => {
-  if (!newLogContent.value.trim() || !selectedDeadline.value) return
-
-  isSubmittingLog.value = true
-  try {
-    const response = await api.post('/add_deadline_log/', {
-      deadline_id: selectedDeadline.value.id,
-      content: newLogContent.value.trim()
-    })
-
-    if (response.data.success) {
-      showToast('Update added successfully.', true)
-      newLogContent.value = ''
-      await fetchData()
-      const updatedDeadline = deadlines.value.find(t => t.id === selectedDeadline.value.id)
-      if (updatedDeadline) {
-        selectedDeadline.value = updatedDeadline
-      }
-    } else {
-      showToast(response.data.error || 'Failed to add update.', false)
-    }
-  } catch (error) {
-    console.error('Error:', error)
-    showToast('An unexpected error occurred.', false)
-  } finally {
-    isSubmittingLog.value = false
-  }
-}
-
-const toggleDeadlineStatus = async () => {
-  if (!selectedDeadline.value) return
-
-  try {
-    const response = await api.post('/update_deadline_status/', {
-      id: selectedDeadline.value.id,
-      status: selectedDeadline.value.status === '0' ? '1' : '0'
-    })
-
-    if (response.data.success) {
-      showToast('Deadline marked as completed! Reloading...', true)
-      closeDeadlineDetails()
-      setTimeout(() => {
-        window.location.reload()
-      }, 700)
-    } else {
-      showToast(response.data.error || 'Failed to update deadline status.', false)
-    }
-  } catch (error) {
-    console.error('Error updating status:', error)
-    showToast('Failed to connect to the server.', false)
-  }
-}
-
-const openDeleteModal = (deadline) => {
-  deadlineToDelete.value = deadline
-}
-
-const closeDeleteModal = () => {
-  deadlineToDelete.value = null
-}
-
-const confirmDeleteDeadlineBtn = async () => {
-  if (!deadlineToDelete.value) return
-  deletingDeadlineId.value = deadlineToDelete.value.id
-
-  try {
-    const response = await api.post('/delete_deadline/', {
-      id: deadlineToDelete.value.id
-    })
-    if (response.data.success) {
-      // Remove deadline seamlessly from UI
-      deadlines.value = deadlines.value.filter(t => t.id !== deadlineToDelete.value.id)
-      deadlines_1_day.value = deadlines_1_day.value.filter(t => t.id !== deadlineToDelete.value.id)
-      deadlines_3_day.value = deadlines_3_day.value.filter(t => t.id !== deadlineToDelete.value.id)
-      deadlines_7_day.value = deadlines_7_day.value.filter(t => t.id !== deadlineToDelete.value.id)
-
-      if (selectedDeadline.value && selectedDeadline.value.id === deadlineToDelete.value.id) {
-        selectedDeadline.value = null
-      }
-      closeDeleteModal()
-      showToast('Deadline deleted successfully.', true)
-      // Refetch data passively to ensure stats are 100% correct if needed
-      fetchData()
-    } else {
-      showToast(response.data.error || 'Failed to delete deadline.', false)
-    }
-  } catch (error) {
-    console.error('Error:', error)
-    showToast('An unexpected error occurred.', false)
-  } finally {
-    deletingDeadlineId.value = null
-    closeDeleteModal()
-  }
-}
-</script>
-
-<style scoped>
-.blur-backdrop {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.fade-in-up {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.border-dashed {
-  border-style: dashed !important;
-}
-
-.empty-state-card {
-  transition: all 0.2s ease-in-out;
-  border-color: #dee2e6 !important;
-}
-
-.empty-state-card:hover {
-  background-color: #f1f3f5 !important;
-  border-color: #adb5bd !important;
-  color: #495057 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
-}
-
-.overview-deadline-item {
-  cursor: pointer;
-}
-
-.overview-deadline-item:hover {
-  text-decoration: underline;
-}
-
-.more-logs-btn {
-  cursor: pointer;
-  color: #6c757d;
-}
-
-.more-logs-btn:hover {
-  text-decoration: underline;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-</style>
-
-
+<style scoped src="../assets/css/views/DashboardView.css"></style>

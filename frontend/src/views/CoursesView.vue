@@ -1,188 +1,19 @@
-<script setup>
-import { ref, onMounted } from 'vue';
-import api from '@/js/api';
-import * as bootstrap from 'bootstrap';
-
-const emit = defineEmits(['update-student']);
-
-// State
-const student = ref(null);
-const courses = ref([]);
-const loading = ref(true);
-
-// Error states
-const addCourseError = ref('');
-
-// Form states
-const newCourse = ref({ course_code: '', name: '' });
-const editCourseData = ref({ id: '', course_code: '', name: '' });
-const courseToDelete = ref(null);
-
-// Modal instances
-let addCourseModalInstance = null;
-let editCourseModalInstance = null;
-let deleteCourseModalInstance = null;
-let toastInstance = null;
-
-const toastContent = ref({ title: '', message: '', isSuccess: true });
-
-onMounted(() => {
-  if (document.getElementById('addCourseModal')) {
-    addCourseModalInstance = new bootstrap.Modal(document.getElementById('addCourseModal'));
-  }
-  if (document.getElementById('editCourseModal')) {
-    editCourseModalInstance = new bootstrap.Modal(document.getElementById('editCourseModal'));
-  }
-  if (document.getElementById('deleteCourseModal')) {
-    deleteCourseModalInstance = new bootstrap.Modal(document.getElementById('deleteCourseModal'));
-  }
-  if (document.getElementById('liveToast')) {
-    toastInstance = new bootstrap.Toast(document.getElementById('liveToast'));
-  }
-  
-  fetchData();
-});
-
-const showToast = (message, isSuccess = true) => {
-  toastContent.value.title = isSuccess ? 'Success' : 'Error';
-  toastContent.value.message = message;
-  toastContent.value.isSuccess = isSuccess;
-  toastInstance?.show();
-};
-
-const fetchData = async () => {
-  try {
-    const response = await api.get('/api/courses_data/');
-    if (response.data.success) {
-        student.value = response.data.data.student;
-        emit('update-student', student.value);
-        courses.value = response.data.data.courses;
-    } else {
-        showToast(response.data.error || 'Failed to load course data.', false);
-    }
-  } catch (error) {
-    console.error('Failed to load courses data:', error);
-    if (error.response && error.response.status === 401) {
-      window.location.href = '/login/';
-    } else {
-      showToast('Failed to load course data.', false);
-    }
-  } finally {
-    loading.value = false;
-  }
-};
-
-
-
-const openAddCourseModal = () => {
-  newCourse.value = { course_code: '', name: '' };
-  addCourseError.value = '';
-  addCourseModalInstance?.show();
-};
-
-const handleAddCourse = async () => {
-  if (!newCourse.value.course_code || !newCourse.value.name) {
-      addCourseError.value = 'Both Course Code and Name are required.';
-      return;
-  }
-  
-  try {
-    const response = await api.post('/add_course/', newCourse.value)
-    
-    if (response.data.success) {
-      addCourseModalInstance?.hide();
-      showToast('Course added successfully!', true);
-      fetchData();
-    } else {
-        addCourseError.value = response.data.error || 'An error occurred';
-    }
-  } catch (error) {
-    console.error('Failed to add course:', error);
-    addCourseError.value = 'An unexpected error occurred.';
-  }
-};
-
-const openEditModal = (course) => {
-  editCourseData.value = { 
-    id: course.id, 
-    course_code: course.course_code, 
-    name: course.name 
-  };
-  editCourseModalInstance?.show();
-};
-
-const handleEditCourse = async () => {
-    if (!editCourseData.value.name.trim()) {
-        showToast('Course name cannot be empty.', false);
-        return;
-    }
-
-    try {
-        const response = await api.post('/edit_course/', {
-            course_id: editCourseData.value.id,
-            name: editCourseData.value.name
-        });
-
-        if (response.data.success) {
-            editCourseModalInstance?.hide();
-            showToast('Course updated successfully.', true);
-            const courseIndex = courses.value.findIndex(c => c.id === editCourseData.value.id);
-            if (courseIndex !== -1) {
-                courses.value[courseIndex].name = editCourseData.value.name;
-            }
-        } else {
-            showToast(response.data.error || 'Failed to update course.', false);
-        }
-    } catch (error) {
-        console.error('Failed to update course:', error);
-        editCourseModalInstance?.hide();
-        showToast('An unexpected error occurred.', false);
-    }
-};
-
-const confirmDeleteModal = (course) => {
-  courseToDelete.value = course;
-  deleteCourseModalInstance?.show();
-};
-
-const handleDeleteCourse = async () => {
-  if (!courseToDelete.value) return;
-
-  try {
-    const response = await api.post('/delete_course/', {
-       course_id: courseToDelete.value.id
-    });
-    
-    if (response.data.success) {
-      deleteCourseModalInstance?.hide();
-      showToast('Course deleted successfully.', true);
-      courses.value = courses.value.filter(c => c.id !== courseToDelete.value.id);
-      courseToDelete.value = null;
-    } else {
-      showToast(response.data.error || 'Failed to delete course.', false);
-    }
-  } catch (error) {
-    console.error('Failed to delete course:', error);
-    deleteCourseModalInstance?.hide();
-    showToast('An unexpected error occurred.', false);
-  }
-};
-</script>
+<script src="../assets/js/views/CoursesView.js"></script>
 
 <template>
     <!-- Main Content -->
     <div class="flex-grow-1 w-100 overflow-y-auto">
-      <div class="content-container">
-        <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+      <div class="view-container">
+        <div class="view-header">
           <h3 class="text-primary mb-0"><BaseIcon name="journal-text" class="me-2" />My Course</h3>
           <button type="button" class="btn btn-primary" @click="openAddCourseModal">
             <BaseIcon name="plus-lg" class="me-1" />Add Course
           </button>
         </div>
 
-        <div class="card shadow-sm">
+        <div class="course-table-card card shadow-sm">
           <div class="card-body p-0">
-            <table class="table table-hover table-striped mb-0">
+            <table class="course-table table table-hover table-striped mb-0">
               <thead class="table-light">
                 <tr>
                   <th scope="col" class="ps-4">Course Code</th>
@@ -206,7 +37,7 @@ const handleDeleteCourse = async () => {
                 <tr v-for="course in courses" :key="course.id" v-else>
                   <td class="ps-4 fw-bold align-middle">{{ course.course_code }}</td>
                   <td class="align-middle">{{ course.name }}</td>
-                  <td class="text-end pe-4">
+                  <td class="action-column text-end pe-4">
                     <button class="btn btn-outline-primary btn-sm btn-circle-sm me-1" @click="openEditModal(course)">
                       <BaseIcon name="pencil" />
                     </button>
@@ -225,7 +56,7 @@ const handleDeleteCourse = async () => {
             <BaseIcon name="arrow-left" class="me-1" />Back to Dashboard
           </router-link>
         </div>
-      </div> <!-- End content-container -->
+      </div> <!-- End view-container -->
     </div> <!-- End Main Content -->
     <div class="modal fade" id="addCourseModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
       <div class="modal-dialog">
@@ -318,11 +149,4 @@ const handleDeleteCourse = async () => {
     </div>
 </template>
 
-<style scoped>
-.content-container {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 0 20px;
-  width: 100%;
-}
-</style>
+<style scoped src="../assets/css/views/CoursesView.css"></style>

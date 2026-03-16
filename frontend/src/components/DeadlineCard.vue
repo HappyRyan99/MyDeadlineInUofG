@@ -1,7 +1,8 @@
+<script src="../assets/js/components/DeadlineCard.js"></script>
+
 <template>
-  <div class="card shadow-sm h-100" 
+  <div class="deadline-card card shadow-sm" 
        :class="{'border-success': isCompleted}" 
-       style="cursor: pointer;" 
        @click="$emit('show-details', deadline)">
     <div class="card-body d-flex flex-column">
       <div class="d-flex justify-content-between align-items-start mb-2">
@@ -20,13 +21,15 @@
         <p style="min-height: 80px;max-height: 100px;overflow: hidden;" 
            :class="{'text-muted': isCompleted}">{{ deadline.content }}</p>
       </div>
-      <p v-if="isCompleted" class="card-text fw-bold mb-auto text-success">
-        <BaseIcon name="calendar-check" class="me-1" />Completed
-      </p>
-      <p v-else :class="['card-text fw-bold mb-auto', deadlineColor]">
-        <BaseIcon name="calendar-event" class="me-1" />
-        {{ deadline.deadline }}
-      </p>
+      <div class="mt-auto">
+        <p v-if="isCompleted" class="card-text fw-bold mb-0 text-success">
+          <BaseIcon name="calendar-check" class="me-1" />Completed
+        </p>
+        <p v-else :class="['card-text fw-bold mb-0', deadlineColor]">
+          <BaseIcon name="calendar-event" class="me-1" />
+          {{ deadline.deadline }}
+        </p>
+      </div>
     </div>
     <div class="card-footer bg-white text-muted small d-flex justify-content-between align-items-center">
       <div><BaseIcon name="clock" class="me-1" />Updated: {{ timeAgo }}</div>
@@ -38,20 +41,4 @@
   </div>
 </template>
 
-<script setup>
-import { computed } from 'vue'
-import { formatTimeAgo, getDeadlineColorClass } from '@/utils/deadlineUtils'
-
-const props = defineProps({
-  deadline: {
-    type: Object,
-    required: true
-  }
-})
-
-defineEmits(['show-details', 'delete-deadline'])
-
-const isCompleted = computed(() => props.deadline.status === '1')
-const deadlineColor = computed(() => getDeadlineColorClass(props.deadline))
-const timeAgo = computed(() => formatTimeAgo(props.deadline.update_time))
-</script>
+<style scoped src="../assets/css/components/DeadlineCard.css"></style>

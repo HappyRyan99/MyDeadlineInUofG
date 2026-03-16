@@ -1,11 +1,4 @@
-<script setup>
-defineProps({
-  student: {
-    type: Object,
-    default: null
-  }
-})
-</script>
+<script src="../assets/js/components/HeaderView.js"></script>
 
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm flex-shrink-0">
@@ -16,17 +9,17 @@ defineProps({
 
       <div class="d-flex align-items-center">
         <template v-if="student">
-          <span class="me-3 text-muted">Welcome, <strong>{{ student.name }}</strong></span>
-          <router-link to="/dashboard" class="me-3 text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+          <span class="user-welcome">Welcome, <strong>{{ student.name }}</strong></span>
+          <router-link to="/dashboard" class="nav-link-custom">
             <BaseIcon name="speedometer2" />Dashboard
           </router-link>
-          <router-link to="/courses" class="me-3 text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+          <router-link to="/courses" class="nav-link-custom">
             <BaseIcon name="book" />My Course
           </router-link>
-          <router-link to="/groups" class="me-3 text-decoration-none text-dark d-inline-flex align-items-center gap-1">
+          <router-link to="/groups" class="nav-link-custom">
             <BaseIcon name="people" />My Group
           </router-link>
-          <a href="/logout/" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1 justify-content-center" style="line-height: 1;">
+          <a href="/logout/" class="btn logout-btn">
             <BaseIcon name="box-arrow-right" />Logout
           </a>
         </template>
@@ -38,6 +31,4 @@ defineProps({
   </nav>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped src="../assets/css/components/HeaderView.css"></style>

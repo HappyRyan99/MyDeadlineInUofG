@@ -14,6 +14,14 @@ export default defineConfig({
   build: {
     outDir: '../www',
     emptyOutDir: true,
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue', 'vue-router', 'axios', 'bootstrap'],
+        }
+      }
+    }
   },
   resolve: {
     alias: {

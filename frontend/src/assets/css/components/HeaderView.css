@@ -1,0 +1,41 @@
+.nav-link-custom {
+  margin-right: 1rem;
+  text-decoration: none;
+  color: #212529;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.nav-link-custom:hover {
+  color: var(--primary-color, #4f46e5);
+}
+
+.nav-link-custom.router-link-active {
+  font-weight: bold;
+  color: var(--primary-color, #4f46e5);
+}
+
+.user-welcome {
+  margin-right: 1rem;
+  color: #6c757d;
+}
+
+.logout-btn {
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background-color: #dc3545;
+  color: white;
+}
