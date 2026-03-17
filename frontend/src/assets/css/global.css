@@ -13,7 +13,7 @@
   --bg-color: #f4f7f9;
   --card-bg: #ffffff;
   --text-primary: #2c3e50;
-  --text-secondary: #6c757d;
+  --text-secondary: #4b5563; /* Darker grey for 4.5:1 contrast ratio */
   
   /* Layout */
   --view-max-width: 1080px;

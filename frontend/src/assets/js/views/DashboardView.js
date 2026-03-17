@@ -92,29 +92,42 @@ export default {
     }
 
     const fetchData = async () => {
+      // 1. Fetch Meta Data (Instant)
       try {
-        const response = await api.get('/api/dashboard_data/')
-        if (response.data.success) {
-          const data = response.data.data
+        const metaResponse = await api.get('/api/dashboard_meta/')
+        if (metaResponse.data.success) {
+          const data = metaResponse.data.data
           student.value = data.student
           emit('update-student', student.value)
           groups.value = data.groups
-          deadlines.value = data.deadlines
-          active_deadlines.value = data.deadlines.filter(t => t.status === '0')
-          completed_deadlines.value = data.deadlines.filter(t => t.status === '1')
-
-          deadlines_1_day.value = active_deadlines.value.filter(t => t.hours_until >= 0 && t.hours_until <= 24)
-          deadlines_3_day.value = active_deadlines.value.filter(t => t.hours_until > 24 && t.hours_until <= 72)
-          deadlines_7_day.value = active_deadlines.value.filter(t => t.hours_until > 72 && t.hours_until <= 168)
-        } else {
-          showToast(response.data.error || 'Failed to load data', false)
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
           window.location.href = '/login/'
-        } else {
-          showToast('Error fetching data', false)
+          return
         }
+        console.error('Error fetching meta:', error)
+      }
+
+      // 2. Fetch Deadlines Data (Optimized)
+      try {
+        const deadlinesResponse = await api.get('/api/dashboard_deadlines/')
+        if (deadlinesResponse.data.success) {
+          const data = deadlinesResponse.data.data
+          deadlines.value = data.deadlines
+          active_deadlines.value = data.deadlines.filter(t => t.status === '0')
+          completed_deadlines.value = data.deadlines.filter(t => t.status === '1')
+
+          // Classification logic (can be handled by backend stats or calculated here)
+          deadlines_1_day.value = active_deadlines.value.filter(t => t.hours_until >= 0 && t.hours_until <= 24)
+          deadlines_3_day.value = active_deadlines.value.filter(t => t.hours_until > 24 && t.hours_until <= 72)
+          deadlines_7_day.value = active_deadlines.value.filter(t => t.hours_until > 72 && t.hours_until <= 168)
+        } else {
+          showToast(deadlinesResponse.data.error || 'Failed to load deadlines', false)
+        }
+      } catch (error) {
+        console.error('Error fetching deadlines:', error)
+        showToast('Error fetching deadlines', false)
       }
     }
 

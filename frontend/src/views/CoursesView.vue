@@ -5,7 +5,7 @@
     <div class="flex-grow-1 w-100 overflow-y-auto">
       <div class="view-container">
         <div class="view-header">
-          <h3 class="text-primary mb-0"><BaseIcon name="journal-text" class="me-2" />My Course</h3>
+          <h1 class="h3 text-primary mb-0"><BaseIcon name="journal-text" class="me-2" />My Course</h1>
           <button type="button" class="btn btn-primary" @click="openAddCourseModal">
             <BaseIcon name="plus-lg" class="me-1" />Add Course
           </button>
@@ -62,7 +62,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Add New Course</h5>
+            <h2 class="modal-title h5">Add New Course</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -91,7 +91,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Edit Course</h5>
+            <h2 class="modal-title h5">Edit Course</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -120,7 +120,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Confirm Deletion</h5>
+            <h2 class="modal-title h5">Confirm Deletion</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">

@@ -6,12 +6,12 @@
        @click="$emit('show-details', deadline)">
     <div class="card-body d-flex flex-column">
       <div class="d-flex justify-content-between align-items-start mb-2">
-        <h5 class="card-title mb-0 text-truncate" :title="deadline.deadline_title"
+        <h3 class="card-title h5 mb-0 text-truncate" :title="deadline.deadline_title"
             :class="[isCompleted ? 'text-success' : (deadline.is_past_due ? 'text-danger fw-bold' : '')]">
           <BaseIcon v-if="isCompleted" name="check-circle-fill" class="me-1" />
           <span v-else-if="deadline.is_past_due">[Overdue] </span>
           {{ deadline.deadline_title }}
-        </h5>
+        </h3>
         <span v-if="deadline.group" class="badge bg-success text-white rounded-pill text-truncate"
               style="max-width: 100px;">Group&nbsp;Work</span>
         <span v-else class="badge bg-primary text-white rounded-pill">Personal</span>

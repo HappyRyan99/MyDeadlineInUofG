@@ -7,7 +7,7 @@
 
       <!-- Page Title & Actions -->
       <div class="view-header">
-        <h3 class="text-primary mb-0"><BaseIcon name="people-fill" class="me-2" />My Group</h3>
+        <h1 class="h3 text-primary mb-0"><BaseIcon name="people-fill" class="me-2" />My Group</h1>
         <button @click="addGroupModalInstance?.show()" class="btn btn-primary">
           <BaseIcon name="plus-lg" class="me-1" />Create New Group
         </button>
@@ -27,9 +27,9 @@
         <div class="col" v-for="group in groups" :key="group.id">
           <div class="group-card card shadow-sm">
             <div class="group-header card-header bg-white">
-              <h5 class="group-title text-primary fw-bold mb-0">
+              <h2 class="group-title h5 text-primary fw-bold mb-0">
                 {{ group.group_name }}
-              </h5>
+              </h2>
               <button v-if="group.is_creator" @click="openAddMemberModal(group.id)"
                       class="btn btn-outline-primary btn-sm btn-circle-sm" title="Add Member">
                 <BaseIcon name="person-plus" />
@@ -37,9 +37,9 @@
             </div>
 
             <div class="group-body card-body">
-              <h6 class="card-subtitle mb-2 text-muted fw-bold">
+              <h3 class="card-subtitle h6 mb-2 text-muted fw-bold">
                 {{ group.course_code }}
-              </h6>
+              </h3>
 
               <p class="card-text text-secondary mb-3 small">
                 {{ group.course_name }}
@@ -108,7 +108,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Create New Group</h5>
+          <h2 class="modal-title h5">Create New Group</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -143,7 +143,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Add Group Member</h5>
+          <h2 class="modal-title h5">Add Group Member</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">

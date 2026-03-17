@@ -12,35 +12,27 @@ time_format_HM = '%Y-%m-%d %H:%M'
 time_format_HMS = '%Y-%m-%d %H:%M:%S'
 
 
-def dashboard_data(request):
-    LogUtils.d("dashboard_data", f"enter this")
+def dashboard_meta(request):
     """
-    Returns the data needed to render the Vue Dashboard.
-    Requires an active session for a student.
+    Returns student info and groups. Very fast.
     """
     student_id = request.session.get('student_id')
-
     if not student_id:
         return JsonResponse({'success': False, 'error': 'Not logged in'}, status=401)
 
     try:
         student = Student.objects.get(student_id=student_id)
-
-        # Student Info
         student_data = {
             'name': student.name,
             'student_id': student.student_id,
             'email': student.email
         }
 
-        # Groups Info (where student created it OR is a member)
-        # We query separately and merge them
+        # Groups Info
         created_groups = GroupInfo.objects.filter(student=student)
         member_groups_std = GroupInfo.objects.filter(members__student=student)
         member_groups_id = GroupInfo.objects.filter(members__member_student_id=student.student_id)
-
-        # Merge QuerySets using | (OR operator in QuerySet)
-        user_groups = (created_groups | member_groups_std | member_groups_id).distinct()
+        user_groups = (created_groups | member_groups_std | member_groups_id).distinct().select_related('course_code')
 
         groups_data = [{
             'id': group.id,
@@ -49,76 +41,118 @@ def dashboard_data(request):
             'course_name': group.course_code.name if group.course_code else ''
         } for group in user_groups]
 
-        # Deadlines Info (created by student OR attached to user_groups)
-        now_int = int(time.time())
+        return JsonResponse({
+            'success': True,
+            'data': {
+                'student': student_data,
+                'groups': groups_data
+            }
+        })
+    except Student.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Student not found'}, status=404)
+    except Exception as e:
+        LogUtils.d("dashboard_meta", f"Error: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def dashboard_deadlines(request):
+    """
+    Returns deadlines and stats. Optimized with eager loading.
+    """
+    student_id = request.session.get('student_id')
+    if not student_id:
+        return JsonResponse({'success': False, 'error': 'Not logged in'}, status=401)
+
+    try:
+        student = Student.objects.get(student_id=student_id)
+        
+        # Get groups first for filtering shared deadlines
+        created_groups = GroupInfo.objects.filter(student=student)
+        member_groups_std = GroupInfo.objects.filter(members__student=student)
+        member_groups_id = GroupInfo.objects.filter(members__member_student_id=student.student_id)
+        user_groups = (created_groups | member_groups_std | member_groups_id).distinct()
+
+        # Eager load groups and logs to avoid N+1 queries
         personal_deadlines = DeadlineItem.objects.filter(student=student)
         shared_deadlines = DeadlineItem.objects.filter(group__in=user_groups)
+        
+        deadlines = (personal_deadlines | shared_deadlines).distinct().order_by('deadline')\
+            .select_related('group', 'group__course_code')\
+            .prefetch_related('logs')
 
-        deadlines = (personal_deadlines | shared_deadlines).distinct().order_by('deadline')
-
-        one_day_limit_str = datetime.fromtimestamp(now_int + day_second).strftime(time_format_HM)
-        three_day_limit_str = datetime.fromtimestamp(now_int + 2 * day_second).strftime(time_format_HM)
-        seven_day_limit_str = datetime.fromtimestamp(now_int + 6 * day_second).strftime(time_format_HM)
-        now_str = datetime.fromtimestamp(now_int).strftime(time_format_HM)
+        now_int = int(time.time())
+        one_day_limit = now_int + day_second
+        three_day_limit = now_int + 3 * day_second
+        seven_day_limit = now_int + 7 * day_second
 
         deadlines_data = []
+        stats = {
+            'deadlines_1_day': [],
+            'deadlines_3_day': [],
+            'deadlines_7_day': [],
+        }
+
         for t in deadlines:
-            # Calculate precise hours difference
             delta_seconds = t.deadline - now_int
             hours_until = delta_seconds / 3600.0
+            
+            # Prefetched logs - sorted in memory to avoid extra query
+            logs_list = sorted(list(t.logs.all()), key=lambda x: x.create_time, reverse=True)
             logs_data = [{
                 'id': log.id,
                 'content': log.deadline_content,
                 'create_time': datetime.fromtimestamp(log.create_time).strftime(time_format_HMS)
-            } for log in t.logs.all().order_by('-create_time')]
+            } for log in logs_list]
 
-            deadlines_data.append({
+            deadline_formatted = datetime.fromtimestamp(t.deadline).strftime(time_format_HM)
+            
+            # Build basic data
+            item = {
                 'id': t.id,
                 'deadline_title': t.deadline_title,
                 'content': t.content,
-                'deadline': datetime.fromtimestamp(t.deadline).strftime(time_format_HM),
+                'deadline': deadline_formatted,
                 'is_past_due': delta_seconds < 0,
                 'hours_until': hours_until,
                 'days_until': int(delta_seconds / day_second),
                 'status': t.status,
                 'update_time': datetime.fromtimestamp(t.update_time).isoformat() + 'Z' if t.update_time else None,
-                'update_time_display': datetime.fromtimestamp(t.update_time).strftime(
-                    time_format_HM) if t.update_time else None,
+                'update_time_display': datetime.fromtimestamp(t.update_time).strftime(time_format_HM) if t.update_time else None,
                 'logs': logs_data,
-                'can_edit': True, # both creator and members can edit title/desc
-                'is_creator': t.student == student, # only creator can delete/toggle status
+                'can_edit': True,
+                'is_creator': t.student_id == student.student_id,
                 'group': {
                     'group_name': t.group.group_name,
                     'course_name': t.group.course_code.name if t.group.course_code else '',
                     'course_code': t.group.course_code.course_code if t.group.course_code else ''
                 } if t.group else None
-            })
+            }
+            deadlines_data.append(item)
 
-        # Limits and categorized for stats
-        stats = {
-            'deadlines_1_day': [t['deadline_title'] for t in deadlines_data if
-                                t['deadline'] <= one_day_limit_str and t['deadline'] >= now_str],
-            'deadlines_3_day': [t['deadline_title'] for t in deadlines_data if
-                                t['deadline'] <= three_day_limit_str and t['deadline'] >= now_str],
-            'deadlines_7_day': [t['deadline_title'] for t in deadlines_data if
-                                t['deadline'] <= seven_day_limit_str and t['deadline'] >= now_str],
-        }
+            # Categorize for stats (only if active)
+            if t.status == '0' and delta_seconds >= 0:
+                if t.deadline <= one_day_limit:
+                    stats['deadlines_1_day'].append(t.deadline_title)
+                if t.deadline <= three_day_limit:
+                    stats['deadlines_3_day'].append(t.deadline_title)
+                if t.deadline <= seven_day_limit:
+                    stats['deadlines_7_day'].append(t.deadline_title)
 
         return JsonResponse({
             'success': True,
             'data': {
-                'student': student_data,
-                'groups': groups_data,
                 'deadlines': deadlines_data,
                 'stats': stats
             }
         })
-
     except Student.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Student not found'}, status=404)
     except Exception as e:
-        LogUtils.d("dashboard_data", f"Error: {str(e)}")
+        LogUtils.d("dashboard_deadlines", f"Error: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+
 
 
 def course_list_data(request):

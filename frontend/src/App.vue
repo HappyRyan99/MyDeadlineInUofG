@@ -1,7 +1,11 @@
 <template>
   <div class="vh-100 d-flex flex-column bg-light overflow-hidden">
-    <HeaderView :student="student" />
-    <router-view @update-student="student = $event" />
+    <header role="banner">
+      <HeaderView :student="student" />
+    </header>
+    <main class="flex-grow-1 overflow-hidden d-flex flex-column" role="main">
+      <router-view @update-student="student = $event" />
+    </main>
     <FooterView />
   </div>
 </template>

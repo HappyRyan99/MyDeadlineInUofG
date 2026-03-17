@@ -18,7 +18,8 @@ class ApiViewsTestCase(TestCase):
         session['student_id'] = self.student.student_id
         session.save()
         
-        self.dashboard_data_url = '/api/dashboard_data/'
+        self.dashboard_meta_url = '/api/dashboard_meta/'
+        self.dashboard_deadlines_url = '/api/dashboard_deadlines/'
 
         self.now_int = int(time.time())
         day_second = 86400
@@ -41,8 +42,15 @@ class ApiViewsTestCase(TestCase):
             create_time=self.log_create_time_int
         )
 
-    def test_dashboard_data_formatting(self):
-        response = self.client.get(self.dashboard_data_url)
+    def test_dashboard_meta_formatting(self):
+        response = self.client.get(self.dashboard_meta_url)
+        self.assertEqual(response.status_code, 200)
+        resp_data = response.json()
+        self.assertTrue(resp_data.get('success'))
+        self.assertEqual(resp_data['data']['student']['name'], 'Test User')
+
+    def test_dashboard_deadlines_formatting(self):
+        response = self.client.get(self.dashboard_deadlines_url)
         self.assertEqual(response.status_code, 200)
         
         resp_data = response.json()
@@ -61,9 +69,6 @@ class ApiViewsTestCase(TestCase):
         
         expected_deadline_str = datetime.fromtimestamp(self.deadline_int).strftime(time_format_HM)
         self.assertEqual(our_deadline['deadline'], expected_deadline_str)
-        
-        expected_update_time_str = datetime.fromtimestamp(self.update_time_int).strftime(time_format_HM)
-        self.assertEqual(our_deadline['update_time_display'], expected_update_time_str)
         
         # Verify log formatting
         logs = our_deadline.get('logs', [])

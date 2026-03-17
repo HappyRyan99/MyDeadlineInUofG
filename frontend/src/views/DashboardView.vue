@@ -8,7 +8,7 @@
         <!-- Student Info Card -->
         <div class="student-info-card card mb-4 shadow-sm">
           <div class="card-header bg-primary text-white">
-            <h5 class="mb-0 d-flex align-items-center"><BaseIcon name="person-circle" class="me-2" />Student Information</h5>
+            <h2 class="h5 mb-0 d-flex align-items-center"><BaseIcon name="person-circle" class="me-2" />Student Information</h2>
           </div>
           <div class="card-body">
             <div class="row">
@@ -32,7 +32,7 @@
         <div class="overview-card card mb-4 shadow-sm">
           <div class="card-body">
             <div class="overview-header d-flex justify-content-between align-items-center mb-3">
-              <h5 class="card-title text-primary mb-0 d-flex align-items-center"><BaseIcon name="calendar3" class="me-2" />Deadline Overview</h5>
+              <h2 class="h5 card-title text-primary mb-0 d-flex align-items-center"><BaseIcon name="calendar3" class="me-2" />Deadline Overview</h2>
               <button class="btn btn-sm btn-primary" @click="openAddDeadlineModal"><BaseIcon name="plus-lg" class="me-1" />Add
                 Deadline
               </button>
@@ -47,7 +47,7 @@
 
             <div class="row text-center">
               <div v-for="(section, index) in overviewSections" :key="index" :class="['col-4', section.borderClass]">
-                <h5 class="fw-bold mb-3" :class="section.colorClass">{{ section.title }}</h5>
+                <h3 class="h6 fw-bold mb-3" :class="section.colorClass">{{ section.title }}</h3>
                 <ul v-if="section.deadlines.length > 0" class="overview-list list-unstyled mb-0 text-start"
                     :class="section.colorClass">
                   <li v-for="deadline in section.deadlines" :key="deadline.id"
@@ -62,9 +62,10 @@
           </div>
         </div>
 
-        <h3 class="deadline-section-title mb-3 border-bottom pb-2 d-flex align-items-center">
+        <h1 class="visually-hidden">Dashboard</h1>
+        <h2 class="deadline-section-title h3 mb-3 border-bottom pb-2 d-flex align-items-center">
           <BaseIcon name="card-checklist" class="me-2 text-primary" />Upcoming Deadlines
-        </h3>
+        </h2>
         <div class="deadline-grid row row-cols-1 row-cols-md-3 g-4">
           <div v-for="deadline in active_deadlines" :key="deadline.id" class="col">
             <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails"
@@ -84,9 +85,9 @@
 
         <!-- Completed Deadlines Section -->
         <template v-if="completed_deadlines.length > 0">
-          <h3 class="deadline-section-title completed-title mb-3 border-bottom pb-2 mt-5 text-success d-flex align-items-center">
+          <h2 class="deadline-section-title completed-title h3 mb-3 border-bottom pb-2 mt-5 text-success d-flex align-items-center">
             <BaseIcon name="check2-circle" class="me-2" />Completed Deadlines
-          </h3>
+          </h2>
           <div class="deadline-grid completed-grid row row-cols-1 row-cols-md-3 g-4 opacity-75">
             <div v-for="deadline in completed_deadlines" :key="deadline.id" class="col">
               <DeadlineCard :deadline="deadline" @show-details="showDeadlineDetails"
@@ -125,7 +126,7 @@
     <div class="modal-dialog" style="max-width: 550px;">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addDeadlineModalLabel">Add New Deadline</h5>
+          <h2 class="modal-title h5" id="addDeadlineModalLabel">Add New Deadline</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                   @click="closeAddDeadlineModal"></button>
         </div>
