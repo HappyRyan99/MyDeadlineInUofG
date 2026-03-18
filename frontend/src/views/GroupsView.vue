@@ -8,7 +8,7 @@
       <!-- Page Title & Actions -->
       <div class="view-header">
         <h1 class="h3 text-primary mb-0"><BaseIcon name="people-fill" class="me-2" />My Group</h1>
-        <button @click="addGroupModalInstance?.show()" class="btn btn-primary">
+        <button @click="openAddGroupModal" class="btn btn-primary">
           <BaseIcon name="plus-lg" class="me-1" />Create New Group
         </button>
       </div>
@@ -57,7 +57,7 @@
                         {{ member.name }}
                         <span class="member-id text-muted">({{ member.student_id }})</span>
                       </span>
-                    <button v-if="group.is_creator" @click="deleteMember(member)"
+                    <button v-if="group.is_creator" @click="confirmDeleteMember(member)"
                             class="btn btn-delete-member" title="Remove Member">
                       <BaseIcon name="x-lg" />
                     </button>
@@ -73,7 +73,7 @@
               <small class="creator-info text-muted">
                 Created by {{ group.creator_name }}
               </small>
-              <button v-if="group.is_creator" @click="deleteGroup(group.id)" class="btn btn-delete-group"
+              <button v-if="group.is_creator" @click="confirmDeleteGroup(group)" class="btn btn-delete-group"
                       title="Delete Group">
                 <BaseIcon name="trash" class="me-1" />
               </button>
@@ -115,18 +115,22 @@
           <form @submit.prevent="handleAddGroup">
             <div class="mb-3">
               <label for="groupName" class="form-label">Group Name</label>
-              <input type="text" v-model="newGroup.group_name" class="form-control" id="groupName"
-                     placeholder="Enter group name"
-                     required>
+              <input type="text" v-model="newGroup.group_name" 
+                     :class="['form-control', { 'is-invalid': formErrors.group_name }]" 
+                     id="groupName" placeholder="Enter group name" required>
+              <div class="invalid-feedback">{{ formErrors.group_name }}</div>
             </div>
             <div class="mb-3">
               <label for="courseId" class="form-label">Associated Course</label>
-              <select v-model="newGroup.course_id" class="form-select" id="courseId">
-                <option value="">None</option>
+              <select v-model="newGroup.course_id" 
+                      :class="['form-select', { 'is-invalid': formErrors.course_id }]" 
+                      id="courseId" required>
+                <option value="" disabled>Select a course...</option>
                 <option v-for="course in courses" :key="course.id" :value="course.id">
                   {{ course.course_code }} - {{ course.name }}
                 </option>
               </select>
+              <div class="invalid-feedback">{{ formErrors.course_id }}</div>
             </div>
           </form>
         </div>
@@ -150,15 +154,17 @@
           <form @submit.prevent="handleAddMember">
             <div class="mb-3">
               <label for="studentId" class="form-label">Student ID</label>
-              <input type="text" v-model="newMember.student_id" class="form-control" id="studentId"
-                     placeholder="Max 10 characters"
-                     maxlength="10" required>
+              <input type="text" v-model="newMember.student_id" 
+                     :class="['form-control', { 'is-invalid': memberFormErrors.student_id }]" 
+                     id="studentId" placeholder="Max 10 characters" maxlength="10" required>
+              <div class="invalid-feedback">{{ memberFormErrors.student_id }}</div>
             </div>
             <div class="mb-3">
               <label for="studentName" class="form-label">Student Name</label>
-              <input type="text" v-model="newMember.student_name" class="form-control" id="studentName"
-                     placeholder="Max 50 characters"
-                     maxlength="50" required>
+              <input type="text" v-model="newMember.student_name" 
+                     :class="['form-control', { 'is-invalid': memberFormErrors.student_name }]" 
+                     id="studentName" placeholder="Max 50 characters" maxlength="50" required>
+              <div class="invalid-feedback">{{ memberFormErrors.student_name }}</div>
             </div>
           </form>
         </div>
@@ -166,6 +172,44 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" @click="handleAddMember">Add Member</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Member Modal -->
+  <ConfirmModal 
+    modalId="deleteMemberModal"
+    title="Confirm Removal"
+    confirmText="Remove Member"
+    @confirm="deleteMember">
+    <template #message>
+      Are you sure you want to remove <strong v-if="memberToDelete">{{ memberToDelete.name }}</strong> from this group?
+    </template>
+  </ConfirmModal>
+
+  <!-- Delete Group Modal -->
+  <ConfirmModal 
+    modalId="deleteGroupModal"
+    title="Confirm Deletion"
+    confirmText="Delete Group"
+    @confirm="deleteGroup">
+    <template #message>
+      Are you sure you want to delete the entire group <strong v-if="groupToDelete">{{ groupToDelete.group_name }}</strong>?
+    </template>
+    <template #warning>
+      All members and associated deadlines will be removed.
+    </template>
+  </ConfirmModal>
+
+  <!-- Toast Container -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong class="me-auto">{{ toastContent.title }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div :class="['toast-body', toastContent.isSuccess ? 'text-success' : 'text-danger']">
+        {{ toastContent.message }}
       </div>
     </div>
   </div>

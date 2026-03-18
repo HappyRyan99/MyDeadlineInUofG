@@ -1,9 +1,13 @@
 import { ref, onMounted } from 'vue';
 import api from '@/js/api';
 import * as bootstrap from 'bootstrap';
+import ConfirmModal from '@/components/ConfirmModal.vue';
 
 export default {
   name: 'CoursesView',
+  components: {
+    ConfirmModal
+  },
   emits: ['update-student'],
   setup(props, { emit }) {
     // State
