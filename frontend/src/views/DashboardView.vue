@@ -218,9 +218,25 @@
             <div class="col-sm-6 text-sm">
                 <span class="text-secondary fw-bold text-uppercase d-block mb-1"
                       style="font-size: 0.75rem;">Deadline</span>
-              <span :class="['fw-bold', getDeadlineColorClass(selectedDeadline)]">
+              <!-- Deadline Edit Mode -->
+              <div v-if="editingField === 'deadline'" class="d-flex w-100 align-items-center mt-1">
+                <input type="datetime-local" class="form-control form-control-sm me-2" v-model="editDeadlineValue"
+                       @keyup.enter="saveDeadlineEdit('deadline')" @keyup.esc="cancelDeadlineEdit" autofocus max="2100-01-01T00:00">
+                <button class="btn btn-sm btn-success me-1 px-2 py-0" @click="saveDeadlineEdit('deadline')"><BaseIcon
+                    name="check-lg" /></button>
+                <button class="btn btn-sm btn-secondary px-2 py-0" @click="cancelDeadlineEdit"><BaseIcon name="x-lg" />
+                </button>
+              </div>
+              <!-- Deadline Display Mode -->
+              <div v-else class="d-flex align-items-center">
+                <span :class="['fw-bold', getDeadlineColorClass(selectedDeadline)]">
                   {{ selectedDeadline.deadline }}
                 </span>
+                <button v-if="selectedDeadline.can_edit" class="btn btn-sm btn-link text-secondary p-0 ms-2 pb-1"
+                        @click="startDeadlineEdit('deadline')" title="Edit Deadline">
+                  <BaseIcon name="pencil" />
+                </button>
+              </div>
             </div>
             <div class="col-sm-6 text-sm">
               <span class="text-secondary fw-bold text-uppercase d-block mb-1" style="font-size: 0.75rem;">Type</span>

@@ -211,6 +211,7 @@ def edit_deadline(request):
         deadline_id = data.get('deadline_id')
         new_title = data.get('deadline_title')
         new_content = data.get('content')
+        new_deadline_str = data.get('deadline')
         
         student_id = request.session.get('student_id')
         if not student_id:
@@ -237,6 +238,12 @@ def edit_deadline(request):
             deadline_item.deadline_title = new_title.strip()
         if new_content is not None:
             deadline_item.content = new_content.strip()
+        if new_deadline_str is not None:
+            try:
+                deadline_dt = datetime.strptime(new_deadline_str, '%Y-%m-%d %H:%M:%S')
+                deadline_item.deadline = int(deadline_dt.timestamp())
+            except ValueError:
+                return JsonResponse({'success': False, 'error': 'Invalid date format. Expected yyyy-mm-dd HH:mm:ss'}, status=400)
             
         deadline_item.update_time = int(time.time())
         deadline_item.save()

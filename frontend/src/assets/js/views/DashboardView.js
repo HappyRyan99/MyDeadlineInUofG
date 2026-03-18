@@ -73,6 +73,7 @@ export default {
     const editingField = ref(null)
     const editTitleValue = ref('')
     const editContentValue = ref('')
+    const editDeadlineValue = ref('')
 
     const toastEl = ref(null)
     const addDeadlineModalEl = ref(null)
@@ -226,6 +227,15 @@ export default {
         editTitleValue.value = selectedDeadline.value.deadline_title
       } else if (field === 'content') {
         editContentValue.value = selectedDeadline.value.content
+      } else if (field === 'deadline') {
+        let dt = selectedDeadline.value.deadline
+        if (dt) {
+          dt = dt.replace(' ', 'T')
+          if (dt.length > 16) {
+             dt = dt.substring(0, 16)
+          }
+        }
+        editDeadlineValue.value = dt
       }
     }
 
@@ -250,6 +260,13 @@ export default {
           return
         }
         payload.content = editContentValue.value.trim()
+      } else if (field === 'deadline') {
+        if (!editDeadlineValue.value) {
+          showToast('Deadline cannot be empty', false)
+          return
+        }
+        payload.deadline = editDeadlineValue.value.replace('T', ' ')
+        if (payload.deadline.length === 16) payload.deadline += ':00'
       }
 
       try {
@@ -260,6 +277,9 @@ export default {
             selectedDeadline.value.deadline_title = payload.deadline_title
           } else if (field === 'content') {
             selectedDeadline.value.content = payload.content
+          } else if (field === 'deadline') {
+            selectedDeadline.value.deadline = payload.deadline
+            fetchData() // Re-fetch to sort and assign to correct buckets
           }
 
           const updateList = (list) => {
@@ -267,6 +287,7 @@ export default {
             if (index !== -1) {
               if (field === 'title') list[index].deadline_title = payload.deadline_title
               if (field === 'content') list[index].content = payload.content
+              if (field === 'deadline') list[index].deadline = payload.deadline
             }
           }
           updateList(deadlines.value)
@@ -368,6 +389,7 @@ export default {
 
           if (selectedDeadline.value && selectedDeadline.value.id === deadlineToDelete.value.id) {
             selectedDeadline.value = null
+            closeDeadlineDetails()
           }
           closeDeleteModal()
           showToast('Deadline deleted successfully.', true)
@@ -408,6 +430,7 @@ export default {
       editingField,
       editTitleValue,
       editContentValue,
+      editDeadlineValue,
       toastEl,
       addDeadlineModalEl,
       deadlineDetailsModalEl,
