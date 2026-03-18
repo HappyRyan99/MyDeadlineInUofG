@@ -1,5 +1,5 @@
 class LogUtils:
-    DEBUG = True  # Global switch to enable/disable logging
+    DEBUG = False  # Global switch to enable/disable logging
 
     @staticmethod
     def d(TAG: str, context: str):

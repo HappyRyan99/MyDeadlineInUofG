@@ -12,7 +12,7 @@ class ApiViewsTestCase(TestCase):
             student_id='20261234',
             name='Test User',
             email='test@example.com',
-            auth_pwd='password'
+            auth_pwd='@Pwd122334'
         )
         session = self.client.session
         session['student_id'] = self.student.student_id

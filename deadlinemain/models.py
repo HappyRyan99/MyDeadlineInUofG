@@ -6,7 +6,7 @@ class Student(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     student_id = models.CharField(max_length=50, unique=True)
-    auth_pwd = models.CharField(max_length=128)  # Storing hashed passwords is best practice
+    auth_pwd = models.CharField(max_length=128)  # hashed passwords
 
     def __str__(self):
         return self.name
@@ -49,7 +49,7 @@ class DeadlineItem(models.Model):
     deadline_title = models.CharField(max_length=200)
     content = models.TextField()
     deadline = models.BigIntegerField()
-    status = models.CharField(max_length=50)  # Could use choices
+    status = models.CharField(max_length=50)
     update_time = models.BigIntegerField()
 
     def __str__(self):

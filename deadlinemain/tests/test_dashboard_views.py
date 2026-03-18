@@ -15,7 +15,7 @@ class DashboardViewsTestCase(TestCase):
             student_id='20261234',
             name='Test User',
             email='test@example.com',
-            auth_pwd='password'
+            auth_pwd='@Pwd122334'
         )
         session = self.client.session
         session['student_id'] = self.student.student_id
@@ -26,7 +26,6 @@ class DashboardViewsTestCase(TestCase):
         self.update_deadline_status_url = '/update_deadline_status/'
 
     def test_add_deadline_success(self):
-        # We define a deadline strictly in the yyyy-mm-dd HH:MM format
         deadline_str = '2026-10-31 23:59'
         payload = {
             'deadline_title': 'Integration Test Task',
